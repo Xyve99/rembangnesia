@@ -389,14 +389,29 @@ a{color:inherit}
   object-fit:cover; object-position:50% 45%;
   background:var(--ink);
   pointer-events:none;
+  /* the source footage is graded dark; lift it so the workshop reads as lit */
+  filter:brightness(1.26) contrast(1.04) saturate(1.08);
 }
 /* WCAG 2.2.2 — the loop carries no information, so it is decorative motion;
    `prefers-reduced-motion` swaps it for the poster frame instead of a control. */
+/* The wash is concentrated behind the copy (x 27-73%, y 15-63% at desktop) and
+   clears entirely toward the frame edges, so the footage stays visible where
+   nothing has to remain legible. Narrow override lives after this rule. */
 .hero__scrim{
   position:absolute; inset:0; z-index:1;
   background:
-    radial-gradient(76% 58% at 50% 44%, rgba(11,16,23,.62) 0%, rgba(11,16,23,.44) 46%, rgba(11,16,23,.7) 100%),
-    linear-gradient(180deg, rgba(11,16,23,.86) 0 8%, rgba(11,16,23,.3) 28% 62%, rgba(11,16,23,.9) 100%);
+    radial-gradient(56% 42% at 50% 38%, rgba(11,16,23,.86) 0%, rgba(11,16,23,.72) 54%, rgba(11,16,23,.24) 84%, rgba(11,16,23,0) 100%),
+    linear-gradient(180deg, rgba(11,16,23,.80) 0 6%, rgba(11,16,23,.06) 24%, rgba(11,16,23,0) 48% 78%, rgba(11,16,23,.56) 100%);
+}
+/* narrow: the copy widens to nearly the full frame and the CTA drops to y 55-62%,
+   so the wash needs to be taller and wider here. Must stay after the base rule —
+   equal specificity, later source wins. */
+@media (max-width:900px){
+  .hero__scrim{
+    background:
+      radial-gradient(86% 56% at 50% 38%, rgba(11,16,23,.74) 0%, rgba(11,16,23,.62) 62%, rgba(11,16,23,.22) 88%, rgba(11,16,23,0) 100%),
+      linear-gradient(180deg, rgba(11,16,23,.76) 0 6%, rgba(11,16,23,.10) 22%, rgba(11,16,23,0) 46% 70%, rgba(11,16,23,.52) 100%);
+  }
 }
 .hero__inner{
   position:relative; z-index:2;
