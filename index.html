@@ -390,28 +390,8 @@ a{color:inherit}
   background:var(--ink);
   pointer-events:none;
 }
-/* WCAG 2.2.2 — looping motion longer than 5s needs a pause control */
-.hero__motion{
-  position:absolute; z-index:3;
-  right:clamp(.75rem,2.5vw,1.75rem); top:clamp(.75rem,2.5vw,1.5rem);
-  display:inline-flex; align-items:center; gap:.5rem;
-  min-height:44px; padding:.55rem .9rem;
-  background:rgba(11,16,23,.72); color:#F5EFE7;
-  border:1px solid rgba(245,239,231,.28); cursor:pointer;
-  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.6875rem; font-weight:500;
-  letter-spacing:.13em; text-transform:uppercase;
-  backdrop-filter:blur(3px);
-  transition:background .15s ease, border-color .15s ease;
-}
-.hero__motion:hover{background:var(--flood); border-color:var(--flood-2)}
-.hero__motion svg{width:13px; height:13px; flex:0 0 auto}
-@media (max-width:539px){
-  .hero__motion{min-width:44px; padding:.55rem}
-  .hero__motion span{
-    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
-    overflow:hidden; clip-path:inset(50%); white-space:nowrap;
-  }
-}
+/* WCAG 2.2.2 — the loop carries no information, so it is decorative motion;
+   `prefers-reduced-motion` swaps it for the poster frame instead of a control. */
 .hero__scrim{
   position:absolute; inset:0; z-index:1;
   background:
@@ -1115,10 +1095,6 @@ a{color:inherit}
       <source src="https://cdn.jsdelivr.net/gh/Xyve99/rembangnesia-assets@v1/rembangnesia-hero.mp4" type="video/mp4">
     </video>
     <div class="hero__scrim" aria-hidden="true"></div>
-    <button class="hero__motion" type="button" data-motion aria-pressed="false">
-      <svg viewBox="0 0 14 14" fill="currentColor" aria-hidden="true" data-motion-icon><rect x="3" y="2.5" width="3" height="9" rx="1"/><rect x="8" y="2.5" width="3" height="9" rx="1"/></svg>
-      <span data-motion-label>Jeda video</span>
-    </button>
     <div class="hero__inner shell">
       <p class="eyebrow hero__eyebrow">Sale, Kabupaten Rembang &middot; Jawa Tengah</p>
       <span class="hero__logo">
@@ -1931,53 +1907,34 @@ a{color:inherit}
 </script>
 <!-- CHUNK:VIDEO -->
 <script>
-/* Hero video: honour reduced-motion, expose a real pause control (WCAG 2.2.2),
-   and stop decoding while the hero is scrolled out of view. */
+/* Hero video: autoplays and loops with no control surface. Reduced-motion
+   visitors get the poster frame instead, and the loop stops decoding once the
+   hero scrolls away. */
 (function(){
   "use strict";
   const v = document.querySelector("[data-hero-video]");
-  const btn = document.querySelector("[data-motion]");
-  if (!v || !btn) return;
+  if (!v) return;
 
-  const label = btn.querySelector("[data-motion-label]");
-  const icon = btn.querySelector("[data-motion-icon]");
-  const PAUSE_ICON = '<rect x="3" y="2.5" width="3" height="9" rx="1"/><rect x="8" y="2.5" width="3" height="9" rx="1"/>';
-  const PLAY_ICON = '<path d="M4 2.5 11.5 7 4 11.5z"/>';
   const reduce = matchMedia("(prefers-reduced-motion: reduce)");
 
-  /* user intent, once expressed, outranks the observer below */
-  let wantsPlay = !reduce.matches;
-
-  function render(){
-    const paused = v.paused;
-    btn.setAttribute("aria-pressed", String(paused));
-    label.textContent = paused ? "Putar video" : "Jeda video";
-    icon.innerHTML = paused ? PLAY_ICON : PAUSE_ICON;
+  function apply(){
+    if (reduce.matches) { v.removeAttribute("autoplay"); v.pause(); }
+    else { v.play().catch(() => {}); }
   }
 
-  if (reduce.matches) { v.removeAttribute("autoplay"); v.pause(); }
-
-  btn.addEventListener("click", () => {
-    wantsPlay = v.paused;
-    if (wantsPlay) v.play().catch(() => {});
-    else v.pause();
-    render();
-  });
-  v.addEventListener("play", render);
-  v.addEventListener("pause", render);
+  apply();
+  reduce.addEventListener("change", apply);
 
   /* a video decoding behind six screens of content is wasted battery */
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(entries => {
       entries.forEach(en => {
-        if (!wantsPlay) return;
+        if (reduce.matches) return;
         if (en.isIntersecting) v.play().catch(() => {});
         else v.pause();
       });
     }, {threshold: 0.05}).observe(v);
   }
-
-  render();
 })();
 </script>
 </body>
