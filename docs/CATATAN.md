@@ -50,6 +50,18 @@ viewport sempit copy-nya melebar hampir penuh dan CTA turun ke y 55-62%.
 Hasilnya panel cuma 37% lebih gelap dari rekaman mentah, bukan 50% seperti versi
 pertama.
 
+Scrim-nya **bukan** elips terpusat. Versi sebelumnya memakai
+`radial-gradient(56% 42% at 50% 38%, ...)` yang falloff-nya berakhir di dalam
+frame, dan mata langsung membacanya sebagai gumpalan gelap di belakang copy —
+persis keluhan "masih ada shadow di text header". Sekarang: satu band vertikal
+rata plus vignette tepi `radial-gradient(140% 120% ...)` yang kedua falloff-nya
+terpotong tepi frame, jadi washnya tidak punya batas yang terlihat. Karena tidak
+lagi bergantung pada posisi copy, tidak perlu breakpoint terpisah.
+
+Wash rata sepenuhnya (satu alpha untuk seluruh panel) sudah dicoba dan gagal:
+pada alpha .58 pun teksnya cuma 2.88:1. Band vertikal perlu, karena copy-nya
+memang duduk di paruh atas.
+
 Pelajaran yang mahal: **ukur kontras di banyak frame, bukan satu frame.** Ketika
 scrim dilonggarkan, satu frame diam terlihat lolos, tapi frame sablon oranye
 terang di detik ~2 menjatuhkan tombol `.btn--ghost` yang transparan ke 2.09:1.
