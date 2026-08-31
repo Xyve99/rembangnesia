@@ -41,6 +41,22 @@ di bawah CTA.
 
 ## Video hero
 
+Rekaman sumbernya di-grade gelap, jadi elemen videonya sendiri diberi
+`filter:brightness(1.26) contrast(1.04) saturate(1.08)`. Scrim-nya **tidak** rata
+menutup panel: washnya terkonsentrasi di belakang copy (x 27-73%, y 15-63% di
+desktop) dan bersih total ke tepi frame, karena di tepi tidak ada yang perlu
+tetap terbaca. Versi `max-width:900px` lebih tinggi dan lebih lebar sebab di
+viewport sempit copy-nya melebar hampir penuh dan CTA turun ke y 55-62%.
+Hasilnya panel cuma 37% lebih gelap dari rekaman mentah, bukan 50% seperti versi
+pertama.
+
+Pelajaran yang mahal: **ukur kontras di banyak frame, bukan satu frame.** Ketika
+scrim dilonggarkan, satu frame diam terlihat lolos, tapi frame sablon oranye
+terang di detik ~2 menjatuhkan tombol `.btn--ghost` yang transparan ke 2.09:1.
+Perbaikannya memberi tombol itu latar sendiri (`rgba(11,16,23,.62)` +
+`backdrop-filter`) daripada menggelapkan seluruh panel lagi. Verifikasi sekarang
+menyisir 14 frame di sepanjang loop pada 6 viewport; margin tersempit 4.94:1.
+
 Autoplay, muted, loop, tanpa tombol kontrol. Ini sah menurut WCAG 2.2.2 karena
 loopnya dekoratif — tidak membawa informasi apa pun yang tidak sudah ada di
 teks. Pengunjung dengan `prefers-reduced-motion: reduce` mendapat frame poster:
