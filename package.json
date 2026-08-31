@@ -1,0 +1,17 @@
+{
+  "name": "rembangnesia",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Halaman profil konveksi & sablon Rembangnesia",
+  "scripts": {
+    "serve": "python3 -m http.server 8899",
+    "check": "node tools/check.js",
+    "check:live": "URL=https://xyve99.github.io/rembangnesia/ node tools/check.js",
+    "banner": "node tools/banner.js",
+    "banner:bg": "node tools/bg.js",
+    "banner:contrast": "python3 tools/contrast.py"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
