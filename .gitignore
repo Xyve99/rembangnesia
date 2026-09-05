@@ -2,3 +2,8 @@ node_modules/
 out/
 __pycache__/
 *.pyc
+contoh/
+masuk/
+bahan baru/
+.claude/
+bot/.env
