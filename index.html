@@ -18,8 +18,44 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/etalase.css">
+<style>
+.selamat-datang{position:fixed; inset:0; z-index:100; display:grid; place-items:center;
+  background:var(--bg); padding:24px}
+.selamat-datang[hidden]{display:none}
+.sd__kartu{width:min(340px,100%); text-align:center;
+  animation:sd-masuk .55s var(--kurva) both}
+@keyframes sd-masuk{from{opacity:0; transform:translateY(18px) scale(.96)}}
+.sd__logo{width:auto; height:56px; max-width:80%; margin:0 auto 20px}
+.sd__sapa{font-size:22px; font-weight:700; letter-spacing:-.03em}
+.sd__bawah{margin-top:4px; font-size:15px; color:var(--label-2)}
+.sd__tombol{margin-top:26px; width:100%; min-height:50px;
+  font-size:17px; font-weight:600;
+  box-shadow:0 8px 24px -8px rgba(0,122,255,.65)}
+.sd__tombol svg{width:19px; height:19px}
+.sd__tombol:disabled{opacity:0; transition:opacity .3s ease}
+.selamat-datang.pergi{opacity:0; transform:scale(1.04); pointer-events:none;
+  transition:opacity .4s ease, transform .4s var(--kurva)}
+.sd__detik{margin-top:14px; font-size:13px; color:var(--label-3); min-height:1.2em}
+@media (prefers-reduced-motion:reduce){
+  .sd__kartu{animation:none}
+  .selamat-datang.pergi{transition:none}
+}
+</style>
 </head>
 <body>
+
+<div class="selamat-datang" data-selamat-datang hidden>
+  <div class="sd__kartu">
+    <img class="sd__logo" src="img/logo.webp" alt="Logo Rembangnesia" width="328" height="96">
+    <p class="sd__sapa">Selamat datang! 👋</p>
+    <p class="sd__bawah">Etalase desain kaos Rembangnesia</p>
+    <button class="btn sd__tombol" type="button" data-masuk>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+      Masuk ke Etalase
+    </button>
+    <p class="sd__detik" data-detik></p>
+  </div>
+</div>
 
 <header class="bar">
   <div class="bar__in wrap">
@@ -94,5 +130,6 @@
 </dialog>
 
 <script src="js/etalase.js"></script>
+<script src="js/selamat-datang.js"></script>
 </body>
 </html>
