@@ -138,8 +138,7 @@
     }
     turun++;
   }
-  var EMO_CARI = "https://cdn.jsdelivr.net/gh/Tarikul-Islam-Anik/Telegram-Animated-Emojis@main/" +
-    "Objects/Magnifying%20Glass%20Tilted%20Left.webp";
+  var EMO_CARI = "img/emo/kaca.webp";
 
   function saring() {
     var q = el.cari.value.trim().toLowerCase();
