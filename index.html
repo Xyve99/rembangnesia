@@ -27,6 +27,8 @@
 @keyframes sd-masuk{from{opacity:0; transform:translateY(18px) scale(.96)}}
 .sd__logo{width:auto; height:56px; max-width:80%; margin:0 auto 20px}
 .sd__sapa{font-size:22px; font-weight:700; letter-spacing:-.03em}
+.sd__emo{display:inline-block; width:1.15em; height:1.15em; vertical-align:-.18em;
+  margin-left:.2em; -webkit-user-select:none; user-select:none}
 .sd__bawah{margin-top:4px; font-size:15px; color:var(--label-2)}
 .sd__tombol{margin-top:26px; width:100%; min-height:50px;
   font-size:17px; font-weight:600;
@@ -38,6 +40,7 @@
 .sd__detik{margin-top:14px; font-size:13px; color:var(--label-3); min-height:1.2em}
 @media (prefers-reduced-motion:reduce){
   .sd__kartu{animation:none}
+  .sd__emo{display:none}
   .selamat-datang.pergi{transition:none}
 }
 </style>
@@ -47,7 +50,7 @@
 <div class="selamat-datang" data-selamat-datang hidden>
   <div class="sd__kartu">
     <img class="sd__logo" src="img/logo.webp" alt="Logo Rembangnesia" width="328" height="96">
-    <p class="sd__sapa">Selamat datang! 👋</p>
+    <p class="sd__sapa">Selamat datang!<img class="sd__emo" src="https://cdn.jsdelivr.net/gh/Tarikul-Islam-Anik/Telegram-Animated-Emojis@main/People/Waving%20Hand.webp" alt="" width="26" height="26"></p>
     <p class="sd__bawah">Etalase desain kaos Rembangnesia</p>
     <button class="btn sd__tombol" type="button" data-masuk>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
