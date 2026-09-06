@@ -72,7 +72,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 
 .bulat{
   flex:0 0 auto;
-  width:38px; height:38px; border-radius:50%;
+  width:44px; height:44px; border-radius:50%;
   display:grid; place-items:center;
   background:var(--kaca); color:var(--biru);
   border:1px solid var(--kaca-tepi);
@@ -206,15 +206,13 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   flex:0 0 auto;
   width:44px; height:44px; border-radius:50%;
   display:grid; place-items:center;
-  background:var(--kaca); color:var(--biru);
-  border:1px solid var(--kaca-tepi);
-  backdrop-filter:var(--kaca-blur);
-  -webkit-backdrop-filter:var(--kaca-blur);
-  box-shadow:var(--kaca-kilau), 0 3px 12px -7px rgba(23,26,35,.35);
+  background:var(--isian); color:var(--biru);
+  border:1px solid var(--garis-2);
+  box-shadow:none;
   cursor:pointer;
   transition:background .18s ease, color .18s ease, transform .12s ease;
 }
-.tandai:hover{background:rgba(255,255,255,.8)}
+.tandai:hover{background:var(--isian-2)}
 .tandai:active{transform:scale(.9)}
 .tandai svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2}
 .tandai[aria-pressed="true"]{background:var(--biru); color:#fff}
