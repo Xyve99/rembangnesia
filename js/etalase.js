@@ -85,9 +85,9 @@
 
   function kartu(d) {
     var u = ukuran(d, 760);
-    return '<figure class="kartu" id="' + esc(d.kode) + '">' +
+    return '<figure class="kartu masuk" id="' + esc(d.kode) + '">' +
       '<button class="kartu__buka" type="button" data-buka="' + esc(d.kode) + '">' +
-        '<img src="img/desain/galeri/' + esc(d.kode) + '.webp" alt="' + esc(alt(d)) +
+        '<img data-lambat src="img/desain/galeri/' + esc(d.kode) + '.webp" alt="' + esc(alt(d)) +
         '" width="' + u.w + '" height="' + u.h + '" loading="lazy" decoding="async">' +
         '<span class="sr-only">Lihat lebih besar</span>' +
       "</button>" +
@@ -95,6 +95,48 @@
         '<span class="kartu__kode mono">' + esc(d.kode) + "</span>" +
         tombol(d.kode) +
       "</figcaption></figure>";
+  }
+
+  var pengamat = null;
+  function siapPengamat() {
+    if (!("IntersectionObserver" in window)) return null;
+    if (pengamat) return pengamat;
+    pengamat = new IntersectionObserver(function (entri) {
+      entri.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        muatGambar(e.target);
+        pengamat.unobserve(e.target);
+      });
+    }, {rootMargin: "400px 0px"});
+    return pengamat;
+  }
+
+  function muatGambar(img) {
+    var src = img.getAttribute("data-lambat");
+    if (!src) return;
+    img.removeAttribute("data-lambat");
+    if (img.complete && img.naturalWidth > 0) { img.dataset.muat = "1"; return; }
+    img.dataset.muat = "0";
+    img.addEventListener("load", function () { img.dataset.muat = "1"; }, {once: true});
+    img.addEventListener("error", function () { img.dataset.muat = "error"; }, {once: true});
+  }
+
+  function amati() {
+    var o = siapPengamat();
+    var daftar = el.galeri.querySelectorAll("img[data-lambat]");
+    Array.prototype.forEach.call(daftar, function (img) {
+      if (o) o.observe(img);
+      else muatGambar(img);
+    });
+  }
+
+  var turun = 0;
+  function stagger() {
+    var kartu = el.galeri.children;
+    for (var i = 0; i < kartu.length; i++) {
+      kartu[i].style.animationDelay = (turun ? 0 : Math.min(i * 45, 350)) + "ms";
+    }
+    turun++;
   }
   var EMO_CARI = "https://cdn.jsdelivr.net/gh/Tarikul-Islam-Anik/Telegram-Animated-Emojis@main/" +
     "Objects/Magnifying%20Glass%20Tilted%20Left.webp";
@@ -120,6 +162,10 @@
     el.galeri.innerHTML = tampil.map(kartu).join("");
     el.galeri.hidden = tampil.length === 0;
     el.kosong.hidden = tampil.length > 0;
+    if (tampil.length) {
+      stagger();
+      amati();
+    }
     if (!tampil.length) {
       el.kosong.innerHTML = '<img class="emo emo--besar" src="' + EMO_CARI +
         '" alt="" width="64" height="64">' +

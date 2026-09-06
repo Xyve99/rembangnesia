@@ -166,8 +166,10 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 @keyframes muncul{
   from{opacity:0; transform:translateY(10px)}
 }
+.kartu.masuk{animation:muncul .45s var(--kurva) both}
 @media (prefers-reduced-motion:reduce){
   .galeri{animation:none}
+  .kartu.masuk{animation:none}
 }
 .kartu{
   margin:0; overflow:hidden; align-self:start;
@@ -181,7 +183,20 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   transition:transform .28s var(--kurva);
 }
 .kartu__buka:active{transform:scale(.978); transition-duration:.09s}
-.kartu__buka img{width:100%; height:auto; transition:transform .5s var(--kurva)}
+.kartu__buka img{
+  width:100%; height:auto;
+  transition:transform .5s var(--kurva), opacity .45s ease;
+}
+.kartu__buka img[data-muat="0"]{
+  opacity:0;
+  background:
+    linear-gradient(100deg, transparent 32%, rgba(255,255,255,.7) 50%, transparent 68%) no-repeat,
+    var(--isian);
+  background-size:220% 100%, 100% 100%;
+  animation:kilau 1.4s ease-in-out infinite;
+}
+.kartu__buka img[data-muat="error"]{opacity:1; animation:none; background:none}
+@keyframes kilau{from{background-position:120% 0}to{background-position:-120% 0}}
 @media (hover:hover){
   .kartu:hover{
     transform:translateY(-3px);
@@ -193,6 +208,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .kartu,
   .kartu__buka,
   .kartu__buka img{transition:none}
+  .kartu__buka img[data-muat="0"]{animation:none}
   .kartu:hover{transform:none}
   .kartu:hover .kartu__buka img{transform:none}
 }
