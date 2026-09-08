@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var WA = "6281228775353";
+  var WA = "6285166410556";
   var SUMBER = "data/desain.json";
   var KUNCI = "rmbg.pilihan";
   var BERANDA = "https://xyve99.github.io/rembangnesia/";

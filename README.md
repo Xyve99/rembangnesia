@@ -83,6 +83,6 @@ tag secara permanen, jadi perubahan di tag yang sama tidak akan pernah terlihat.
 
 ## Kontak yang tertanam di halaman
 
-WhatsApp `6281228775353`. Form pesanan **tidak** mengirim apa pun ke server; ia
+WhatsApp `6285166410556`. Form pesanan **tidak** mengirim apa pun ke server; ia
 menyusun teks lalu membuka `wa.me` di tab baru supaya pengunjung bisa memeriksa
 pesannya sebelum menekan kirim. Tidak ada backend, tidak ada cookie pelacak.
