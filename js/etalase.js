@@ -5,6 +5,7 @@
   var SUMBER = "data/desain.json";
   var KUNCI = "rmbg.pilihan";
   var BERANDA = "https://xyve99.github.io/rembangnesia/";
+  var STAT = "http://34.160.111.145:8787";
 
   var el = {
     galeri: document.querySelector("[data-galeri]"),
@@ -228,6 +229,19 @@
     perbaruiPilihan();
   }
 
+  function laporkanKlik(kode, ref) {
+    if (!STAT) return;
+    try {
+      fetch(STAT + "/klik", {
+        method: "POST",
+        mode: "cors",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({kode: kode, ref: ref}),
+        keepalive: true
+      }).catch(function () {});
+    } catch (_) {}
+  }
+
   function setZoom(aktif, x, y) {
     var s = el.panggung;
     if (aktif) {
@@ -290,6 +304,7 @@
   function bukaPratinjau(kode) {
     var d = cari(kode);
     if (!d) return;
+    laporkanKlik(kode, "pratinjau");
     var u = ukuran(d, 1600);
     el.pKode.textContent = d.kode;
     el.pGambar.width = u.w;
@@ -313,6 +328,7 @@
     el.galeri.addEventListener("click", function (e) {
       var buka = e.target.closest("[data-buka]");
       if (buka) {
+        laporkanKlik(buka.getAttribute("data-buka"), "galeri");
         bukaPratinjau(buka.getAttribute("data-buka"));
         return;
       }
