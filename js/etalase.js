@@ -198,8 +198,7 @@
     var baris = daftar.map(function (d, i) {
       return (i + 1) + ". " + d.kode;
     });
-    return "Halo Rembangnesia, saya tertarik dengan desain ini:\n\n" + baris.join("\n") +
-      "\n\nBoleh info harga, bahan, dan ukurannya?\n" + BERANDA;
+    return "Halo kak, saya tertarik dengan desain ini:\n\n" + baris.join("\n");
   }
 
   function tautan(daftar) {
