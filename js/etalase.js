@@ -5,7 +5,7 @@
   var SUMBER = "data/desain.json";
   var KUNCI = "rmbg.pilihan";
   var BERANDA = "https://xyve99.github.io/rembangnesia/";
-  var STAT = "http://34.160.111.145:8787";
+  var STAT = window.RMBG_STAT || "";
 
   var el = {
     galeri: document.querySelector("[data-galeri]"),

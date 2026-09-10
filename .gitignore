@@ -6,7 +6,4 @@ contoh/
 masuk/
 bahan baru/
 .claude/
-bot/.env
-bot/.jalan
-bot/.venv/
-bot/izin.json
+bot/

@@ -69,6 +69,18 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   min-height:52px;
 }
 .bar__logo{width:auto; height:32px; flex:0 0 auto}
+.mata{
+  width:38px; height:38px;
+  background:transparent; border-color:transparent; box-shadow:none;
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+  color:var(--label-2);
+}
+.mata svg{width:21px; height:21px}
+@media (hover:hover){
+  .mata:hover{background:var(--isian); border-color:transparent;
+    box-shadow:none; color:var(--label)}
+}
+.mata[hidden]{display:none}
 
 .bulat{
   flex:0 0 auto;
@@ -413,5 +425,127 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .pratinjau__kaki{padding:10px 10px 12px 14px}
   .pratinjau__kode{font-size:15px}
   .pratinjau__aksi .btn{min-height:44px; padding:0 14px; font-size:15px}
+}
+
+.statistik{
+  width:min(440px, calc(100% - 28px));
+  max-height:calc(100dvh - 40px);
+  margin:auto; padding:0 0 4px; border:0;
+  border-radius:22px; overflow:auto;
+  background:var(--kartu); color:var(--label);
+  box-shadow:0 30px 80px -24px rgba(0,0,0,.45);
+  opacity:0; transform:scale(.94) translateY(14px);
+  transition:opacity .24s ease, transform .36s var(--kurva),
+             display .36s allow-discrete, overlay .36s allow-discrete;
+}
+.statistik[open]{opacity:1; transform:none}
+@starting-style{
+  .statistik[open]{opacity:0; transform:scale(.94) translateY(14px)}
+}
+.statistik:focus{outline:none}
+.statistik::backdrop{
+  background:rgba(28,28,30,0);
+  backdrop-filter:blur(0px);
+  -webkit-backdrop-filter:blur(0px);
+  transition:background .3s ease, backdrop-filter .3s ease,
+             display .3s allow-discrete, overlay .3s allow-discrete;
+}
+.statistik[open]::backdrop{
+  background:rgba(28,28,30,.2);
+  backdrop-filter:blur(10px) saturate(135%);
+  -webkit-backdrop-filter:blur(10px) saturate(135%);
+}
+@starting-style{
+  .statistik[open]::backdrop{
+    background:rgba(28,28,30,0);
+    backdrop-filter:blur(0px);
+    -webkit-backdrop-filter:blur(0px);
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .statistik,
+  .statistik::backdrop{transition:none}
+  .statistik{transform:none}
+}
+.statistik__kepala{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:16px 14px 0 20px;
+}
+.statistik__judul{font-size:22px; font-weight:700; letter-spacing:-.03em}
+.statistik__tutup{
+  width:34px; height:34px;
+  background:var(--isian); border-color:transparent; box-shadow:none;
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+  color:var(--label-2);
+}
+.statistik__tutup svg{width:17px; height:17px}
+@media (hover:hover){
+  .statistik__tutup:hover{background:var(--isian-2); box-shadow:none; color:var(--label)}
+}
+
+.segmen{
+  display:flex; gap:2px;
+  margin:14px 20px 0; padding:2px;
+  background:var(--isian); border-radius:999px;
+}
+.segmen button{
+  flex:1 1 0; min-height:32px; border-radius:999px;
+  font-size:13px; font-weight:500; color:var(--label-2);
+  cursor:pointer;
+  transition:background .18s ease, color .18s ease;
+}
+.segmen button[aria-pressed="true"]{
+  background:var(--kartu); color:var(--label); font-weight:600;
+  box-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+
+.statistik__isi{padding:16px 20px 20px}
+.petakan{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.petak{
+  display:flex; flex-direction:column; gap:1px;
+  padding:14px; border-radius:14px; background:var(--bg);
+}
+.petak__n{font-size:26px; font-weight:700; letter-spacing:-.03em; line-height:1.15}
+.petak__j{font-size:14px; font-weight:500}
+.petak__c{font-size:12px; color:var(--label-3)}
+.petak--kosong{
+  min-height:96px;
+  background:
+    linear-gradient(100deg, transparent 32%, rgba(255,255,255,.7) 50%, transparent 68%) no-repeat,
+    var(--isian);
+  background-size:220% 100%, 100% 100%;
+  animation:kilau 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion:reduce){
+  .petak--kosong{animation:none}
+}
+.statistik__sub{
+  margin:20px 0 8px; padding-left:2px;
+  font-size:13px; font-weight:400; color:var(--label-2);
+}
+.rangking{list-style:none; margin:0; padding:0; display:grid; gap:4px}
+.rangking__baris{
+  position:relative; display:flex; align-items:center; gap:10px;
+  min-height:36px; padding:0 12px;
+  border-radius:10px; overflow:hidden;
+}
+.rangking__bilah{
+  position:absolute; left:0; top:0; bottom:0;
+  background:rgba(0,122,255,.12); border-radius:10px;
+}
+.rangking__kode{position:relative; font-size:14px; font-weight:600}
+.rangking__n{
+  position:relative; margin-left:auto;
+  font-size:13px; color:var(--label-2); font-variant-numeric:tabular-nums;
+}
+.statistik__kabar{
+  padding:18px 4px 6px; text-align:center;
+  font-size:14px; color:var(--label-2);
+}
+@media (max-width:420px){
+  .statistik{width:calc(100% - 20px); border-radius:18px}
+  .petakan{gap:8px}
+  .petak{padding:12px}
+  .petak__n{font-size:23px}
 }
 

@@ -77,6 +77,9 @@
 <header class="bar">
   <div class="bar__in wrap">
     <img class="bar__logo" src="img/logo.webp" alt="Rembangnesia" width="328" height="96">
+    <button class="bulat mata" type="button" data-mata aria-label="Statistik pengunjung" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.2 12S5.8 5.5 12 5.5 21.8 12 21.8 12 18.2 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3.1"/></svg>
+    </button>
   </div>
 </header>
 
@@ -146,7 +149,24 @@
   </div>
 </dialog>
 
+<dialog class="statistik" data-statistik tabindex="-1" aria-label="Statistik pengunjung">
+  <div class="statistik__kepala">
+    <h2 class="statistik__judul">Pengunjung</h2>
+    <button class="bulat statistik__tutup" type="button" data-statistik-tutup aria-label="Tutup statistik">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <div class="segmen" role="group" aria-label="Rentang waktu">
+    <button type="button" data-rentang="0" aria-pressed="true">Semua</button>
+    <button type="button" data-rentang="7" aria-pressed="false">7 hari</button>
+    <button type="button" data-rentang="30" aria-pressed="false">30 hari</button>
+  </div>
+  <div class="statistik__isi" data-statistik-isi aria-live="polite"></div>
+</dialog>
+
+<script>window.RMBG_STAT = "https://rmbg-stat.rmbg.workers.dev";</script>
 <script src="js/etalase.js"></script>
+<script src="js/statistik.js"></script>
 <script src="js/selamat-datang.js"></script>
 </body>
 </html>
