@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
-<link rel="stylesheet" href="css/etalase.css">
+<link rel="stylesheet" href="css/etalase.css?v=2">
 <style>
 .selamat-datang{position:fixed; inset:0; z-index:100; display:grid; place-items:center;
   background:
@@ -150,16 +150,18 @@
 </dialog>
 
 <dialog class="statistik" data-statistik tabindex="-1" aria-label="Statistik pengunjung">
-  <div class="statistik__kepala">
-    <h2 class="statistik__judul">Pengunjung</h2>
-    <button class="bulat statistik__tutup" type="button" data-statistik-tutup aria-label="Tutup statistik">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-    </button>
-  </div>
-  <div class="segmen" role="group" aria-label="Rentang waktu">
-    <button type="button" data-rentang="0" aria-pressed="true">Semua</button>
-    <button type="button" data-rentang="7" aria-pressed="false">7 hari</button>
-    <button type="button" data-rentang="30" aria-pressed="false">30 hari</button>
+  <div class="statistik__atas">
+    <div class="statistik__kepala">
+      <h2 class="statistik__judul">Pengunjung</h2>
+      <button class="bulat statistik__tutup" type="button" data-statistik-tutup aria-label="Tutup statistik">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="segmen" role="group" aria-label="Rentang waktu">
+      <button type="button" data-rentang="0" aria-pressed="true">Semua</button>
+      <button type="button" data-rentang="7" aria-pressed="false">7 hari</button>
+      <button type="button" data-rentang="30" aria-pressed="false">30 hari</button>
+    </div>
   </div>
   <div class="statistik__isi" data-statistik-isi aria-live="polite"></div>
 </dialog>

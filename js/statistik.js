@@ -49,8 +49,8 @@
     } catch (_) {}
   }
 
-  function petak(judul, nilai, catatan) {
-    return '<div class="petak">' +
+  function petak(judul, nilai, catatan, utama) {
+    return '<div class="petak' + (utama ? " petak--utama" : "") + '">' +
       '<span class="petak__n">' + esc(angka(nilai)) + "</span>" +
       '<span class="petak__j">' + esc(judul) + "</span>" +
       (catatan ? '<span class="petak__c">' + esc(catatan) + "</span>" : "") +
@@ -60,10 +60,11 @@
   function daftarTeratas(teratas) {
     if (!teratas || !teratas.length) return "";
     var puncak = teratas[0].jumlah || 1;
-    var baris = teratas.slice(0, 10).map(function (d) {
+    var baris = teratas.slice(0, 10).map(function (d, i) {
       var lebar = Math.max(6, Math.round((d.jumlah / puncak) * 100));
-      return '<li class="rangking__baris">' +
+      return '<li class="rangking__baris" style="--i:' + i + '">' +
         '<span class="rangking__bilah" style="width:' + lebar + '%"></span>' +
+        '<span class="rangking__urut">' + (i + 1) + "</span>" +
         '<span class="rangking__kode mono">' + esc(d.kode) + "</span>" +
         '<span class="rangking__n">' + esc(angka(d.jumlah)) + "</span>" +
         "</li>";
@@ -78,10 +79,10 @@
     var label = rentang ? rentang + " hari terakhir" : "sejak awal";
 
     var isi = '<div class="petakan">' +
-      petak("Pengunjung unik", t.unik, label) +
+      petak("Pengunjung unik", t.unik, label, true) +
       petak("Kunjungan", t.tayang, label) +
       petak("Unik hari ini", t.unikHari, "24 jam terakhir") +
-      petak("Desain dibuka", k.total, esc(angka(k.desain)) + " desain berbeda") +
+      petak("Desain dibuka", k.total, angka(k.desain) + " desain berbeda") +
       "</div>" + daftarTeratas(k.teratas);
 
     if (!t.tayang && !k.total) {
