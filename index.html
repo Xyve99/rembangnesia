@@ -171,5 +171,12 @@
 <script src="js/etalase.js"></script>
 <script src="js/statistik.js"></script>
 <script src="js/selamat-datang.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
 </body>
 </html>

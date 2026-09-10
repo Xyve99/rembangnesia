@@ -1950,5 +1950,12 @@ a{color:inherit}
   }
 })();
 </script>
+<script>
+if ("serviceWorker" in navigator) {
+  addEventListener("load", function () {
+    navigator.serviceWorker.register("../sw.js").catch(function () {});
+  });
+}
+</script>
 </body>
 </html>
