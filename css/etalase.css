@@ -70,17 +70,29 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 }
 .bar__logo{width:auto; height:32px; flex:0 0 auto}
 .mata{
-  width:38px; height:38px;
-  background:transparent; border-color:transparent; box-shadow:none;
-  backdrop-filter:none; -webkit-backdrop-filter:none;
-  color:var(--label-2);
+  flex:0 0 auto;
+  display:inline-flex; align-items:center; gap:7px;
+  height:34px; padding:0 13px;
+  border-radius:999px;
+  background:var(--isian); color:var(--label-2);
+  font-size:13px; font-weight:600; letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;
+  cursor:pointer;
+  transition:background .2s var(--kurva), color .2s var(--kurva),
+             transform .12s ease;
 }
-.mata svg{width:21px; height:21px}
+.mata svg{width:16px; height:16px; flex:0 0 auto}
+.mata circle{transition:fill .2s var(--kurva)}
 @media (hover:hover){
-  .mata:hover{background:var(--isian); border-color:transparent;
-    box-shadow:none; color:var(--label)}
+  .mata:hover{background:var(--isian-2); color:var(--label)}
+  .mata:hover circle{fill:currentColor}
 }
+.mata:active{transform:scale(.94)}
+.mata__n{animation:kabur-masuk .5s var(--kurva) both}
 .mata[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){
+  .mata__n{animation:none}
+}
 
 .bulat{
   flex:0 0 auto;

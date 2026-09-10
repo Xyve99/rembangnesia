@@ -6,6 +6,7 @@
 
   var el = {
     mata: document.querySelector("[data-mata]"),
+    mataN: document.querySelector("[data-mata-n]"),
     kotak: document.querySelector("[data-statistik]"),
     isi: document.querySelector("[data-statistik-isi]"),
     segmen: document.querySelector(".segmen")
@@ -18,7 +19,7 @@
   }
 
   var rentang = 0;
-  var memuat = false;
+  var simpanan = {};
 
   function esc(teks) {
     return String(teks == null ? "" : teks).replace(/[&<>"']/g, function (c) {
@@ -35,18 +36,16 @@
   // biasa tidak menggelembungkan angka tayang.
   function catatKunjungan() {
     try {
-      if (sessionStorage.getItem(KUNCI_LIHAT)) return;
+      if (sessionStorage.getItem(KUNCI_LIHAT)) return Promise.resolve();
       sessionStorage.setItem(KUNCI_LIHAT, "1");
     } catch (_) {}
-    try {
-      fetch(STAT + "/lihat", {
-        method: "POST",
-        mode: "cors",
-        headers: {"Content-Type": "application/json"},
-        body: "{}",
-        keepalive: true
-      }).catch(function () {});
-    } catch (_) {}
+    return fetch(STAT + "/lihat", {
+      method: "POST",
+      mode: "cors",
+      headers: {"Content-Type": "application/json"},
+      body: "{}",
+      keepalive: true
+    }).catch(function () {});
   }
 
   function petak(judul, nilai, catatan, utama) {
@@ -91,26 +90,47 @@
     el.isi.innerHTML = isi;
   }
 
-  function muat() {
-    if (memuat) return;
-    memuat = true;
-    el.isi.setAttribute("data-sibuk", "1");
+  // Angka di tombol header: pengunjung unik sejak awal.
+  function angkaTombol(data) {
+    var n = (data && data.tampilan && data.tampilan.unik) || 0;
+    if (!n || !el.mataN) return;
+    el.mataN.textContent = angka(n);
+    el.mataN.hidden = false;
+    el.mata.setAttribute("aria-label",
+      "Lihat statistik pengunjung — " + angka(n) + " pengunjung unik");
+  }
 
-    var jalur = rentang ? "/rekap/" + rentang : "/rekap";
-    fetch(STAT + jalur, {mode: "cors", cache: "no-store"})
-      .then(function (r) {
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.json();
+  function ambil(r) {
+    var jalur = r ? "/rekap/" + r : "/rekap";
+    return fetch(STAT + jalur, {mode: "cors", cache: "no-store"})
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
       })
-      .then(tampilkan)
-      .catch(function () {
-        el.isi.innerHTML = '<p class="statistik__kabar">Statistik sedang tidak bisa dimuat. ' +
-          "Coba lagi sebentar lagi.</p>";
-      })
-      .then(function () {
-        memuat = false;
-        el.isi.removeAttribute("data-sibuk");
+      .then(function (data) {
+        simpanan[r] = data;
+        if (!r) angkaTombol(data);
+        return data;
       });
+  }
+
+  function muat() {
+    var kunci = rentang;
+    var lama = simpanan[kunci];
+
+    // Sudah pernah diambil? Tampilkan seketika, lalu segarkan diam-diam.
+    if (lama) tampilkan(lama);
+    else kerangka();
+
+    ambil(kunci).then(function (data) {
+      if (kunci !== rentang) return;
+      if (lama && JSON.stringify(lama) === JSON.stringify(data)) return;
+      tampilkan(data);
+    }).catch(function () {
+      if (kunci !== rentang || lama) return;
+      el.isi.innerHTML = '<p class="statistik__kabar">Statistik sedang tidak bisa dimuat. ' +
+        "Coba lagi sebentar lagi.</p>";
+    });
   }
 
   function kerangka() {
@@ -120,7 +140,6 @@
   }
 
   el.mata.addEventListener("click", function () {
-    kerangka();
     if (!el.kotak.open) el.kotak.showModal();
     el.kotak.focus();
     muat();
@@ -142,9 +161,11 @@
         b.setAttribute("aria-pressed", b === pilih ? "true" : "false");
       }
     );
-    kerangka();
     muat();
   });
 
-  catatKunjungan();
+  // Catat kunjungan dulu supaya angka di tombol sudah termasuk kunjungan ini.
+  catatKunjungan()
+    .then(function () { return ambil(0); })
+    .catch(function () {});
 })();
