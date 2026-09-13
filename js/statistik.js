@@ -1,25 +1,41 @@
+// Panel "Sekilas" di header etalase.
+//
+// Dulu panel ini menampilkan angka pengunjung dari server statistik. Angka
+// itu tidak lagi dipajang ke pengunjung: yang tampil hanya fakta yang benar-
+// benar bisa dipertanggungjawabkan — jumlah desain (dibaca dari
+// data/desain.json) dan daftar layanan. Tidak ada angka yang dikarang.
+//
+// Pencatatan kunjungan dan klik tetap jalan seperti biasa; itu alat pemilik
+// etalase lewat bot Telegram (/klik), bukan tontonan pengunjung.
+
 (function () {
   "use strict";
 
   var STAT = window.RMBG_STAT || "";
+  var SUMBER = "data/desain.json";
   var KUNCI_LIHAT = "rmbg.lihat";
+
+  // Disalin dari halaman profil. Kalau daftar layanan di sana berubah,
+  // ubah juga di sini — angkanya dipakai sebagai jumlah jenis layanan.
+  var LAYANAN = [
+    "Kaos Sablon Premium",
+    "Kaos Sablon THR",
+    "PDH & Kemeja Bordir",
+    "Polo Shirt Bordir / Sablon",
+    "Jersey Full Printing",
+    "Seragam Olahraga Sekolah"
+  ];
 
   var el = {
     mata: document.querySelector("[data-mata]"),
-    mataN: document.querySelector("[data-mata-n]"),
     kotak: document.querySelector("[data-statistik]"),
     isi: document.querySelector("[data-statistik-isi]"),
-    segmen: document.querySelector(".segmen")
+    jml: document.querySelector("[data-jumlah]")
   };
 
   if (!el.mata || !el.kotak || !el.isi) return;
-  if (!STAT) {
-    el.mata.hidden = true;
-    return;
-  }
 
-  var rentang = 0;
-  var simpanan = {};
+  var jumlah = null;   // jumlah desain; null selama belum diketahui
 
   function esc(teks) {
     return String(teks == null ? "" : teks).replace(/[&<>"']/g, function (c) {
@@ -31,10 +47,10 @@
     return Number(n || 0).toLocaleString("id-ID");
   }
 
-  // Satu kunjungan dicatat sekali per sesi tab. Server tetap punya
-  // pengamannya sendiri (batas laju + jeda IP), ini hanya agar muat ulang
-  // biasa tidak menggelembungkan angka tayang.
+  // Satu kunjungan dicatat sekali per sesi tab. Tidak ada kaitannya dengan
+  // yang tampil di panel — ini murni untuk pemilik etalase.
   function catatKunjungan() {
+    if (!STAT) return Promise.resolve();
     try {
       if (sessionStorage.getItem(KUNCI_LIHAT)) return Promise.resolve();
       sessionStorage.setItem(KUNCI_LIHAT, "1");
@@ -49,123 +65,78 @@
   }
 
   function petak(judul, nilai, catatan, utama) {
+    var tampil = typeof nilai === "number" ? angka(nilai) : nilai;
     return '<div class="petak' + (utama ? " petak--utama" : "") + '">' +
-      '<span class="petak__n">' + esc(angka(nilai)) + "</span>" +
+      '<span class="petak__n">' + esc(tampil) + "</span>" +
       '<span class="petak__j">' + esc(judul) + "</span>" +
       (catatan ? '<span class="petak__c">' + esc(catatan) + "</span>" : "") +
       "</div>";
   }
 
-  function daftarTeratas(teratas) {
-    if (!teratas || !teratas.length) return "";
-    var puncak = teratas[0].jumlah || 1;
-    var baris = teratas.slice(0, 10).map(function (d, i) {
-      var lebar = Math.max(6, Math.round((d.jumlah / puncak) * 100));
+  function daftarLayanan() {
+    var baris = LAYANAN.map(function (nama, i) {
       return '<li class="rangking__baris" style="--i:' + i + '">' +
-        '<span class="rangking__bilah" style="width:' + lebar + '%"></span>' +
         '<span class="rangking__urut">' + (i + 1) + "</span>" +
-        '<span class="rangking__kode mono">' + esc(d.kode) + "</span>" +
-        '<span class="rangking__n">' + esc(angka(d.jumlah)) + "</span>" +
+        '<span class="rangking__kode">' + esc(nama) + "</span>" +
         "</li>";
     });
-    return '<h3 class="statistik__sub">Desain paling sering dibuka</h3>' +
+    return '<h3 class="statistik__sub">Layanan kami</h3>' +
       '<ol class="rangking">' + baris.join("") + "</ol>";
   }
 
-  function tampilkan(data) {
-    var t = data.tampilan || {};
-    var k = data.klik || {};
-    var label = rentang ? rentang + " hari terakhir" : "sejak awal";
+  function kerangka() {
+    var kosong = '<div class="petak petak--kosong"></div>';
+    el.isi.innerHTML = '<div class="petakan">' + kosong + kosong +
+      kosong + kosong + "</div>";
+  }
 
-    var isi = '<div class="petakan">' +
-      petak("Pengunjung unik", t.unik, label, true) +
-      petak("Kunjungan", t.tayang, label) +
-      petak("Unik hari ini", t.unikHari, "24 jam terakhir") +
-      petak("Desain dibuka", k.total, angka(k.desain) + " desain berbeda") +
-      "</div>" + daftarTeratas(k.teratas);
-
-    if (!t.tayang && !k.total) {
-      isi += '<p class="statistik__kabar">Belum ada data pada rentang ini.</p>';
+  function tampilkan() {
+    if (jumlah === null) {
+      kerangka();
+      return;
     }
-    el.isi.innerHTML = isi;
+    el.isi.innerHTML = '<div class="petakan">' +
+      petak("Desain sudah diproduksi", jumlah, "siap dipesan ulang", true) +
+      petak("Jenis layanan", LAYANAN.length, "kaos sampai seragam sekolah") +
+      petak("Mulai per potong", "30rb", "kaos sablon THR") +
+      petak("Konsultasi desain", "Gratis", "sebelum memesan") +
+      "</div>" + daftarLayanan();
   }
 
-  // Angka di tombol header: pengunjung unik sejak awal.
-  function angkaTombol(data) {
-    var n = (data && data.tampilan && data.tampilan.unik) || 0;
-    if (!n || !el.mataN) return;
-    el.mataN.textContent = angka(n);
-    el.mataN.hidden = false;
-    el.mata.setAttribute("aria-label",
-      "Lihat statistik pengunjung — " + angka(n) + " pengunjung unik");
-  }
-
-  function ambil(r) {
-    var jalur = r ? "/rekap/" + r : "/rekap";
-    return fetch(STAT + jalur, {mode: "cors", cache: "no-store"})
+  // Jumlah desain dibaca dari sumber yang sama dengan galeri, bukan
+  // ditulis tangan — biar tidak pernah basi saat ada desain baru.
+  function muat() {
+    fetch(SUMBER, {cache: "no-cache"})
       .then(function (res) {
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
       .then(function (data) {
-        simpanan[r] = data;
-        if (!r) angkaTombol(data);
-        return data;
+        if (data && data.desain && data.desain.length) {
+          jumlah = data.desain.length;
+        }
+        if (el.kotak.open) tampilkan();
+      })
+      .catch(function () {
+        // Jaringan gagal: pakai angka yang sudah tertulis di halaman galeri.
+        var cocok = el.jml && /(\d[\d.]*)/.exec(el.jml.textContent);
+        if (cocok) jumlah = Number(cocok[1].replace(/\./g, ""));
+        if (el.kotak.open) tampilkan();
       });
-  }
-
-  function muat() {
-    var kunci = rentang;
-    var lama = simpanan[kunci];
-
-    // Sudah pernah diambil? Tampilkan seketika, lalu segarkan diam-diam.
-    if (lama) tampilkan(lama);
-    else kerangka();
-
-    ambil(kunci).then(function (data) {
-      if (kunci !== rentang) return;
-      if (lama && JSON.stringify(lama) === JSON.stringify(data)) return;
-      tampilkan(data);
-    }).catch(function () {
-      if (kunci !== rentang || lama) return;
-      el.isi.innerHTML = '<p class="statistik__kabar">Statistik sedang tidak bisa dimuat. ' +
-        "Coba lagi sebentar lagi.</p>";
-    });
-  }
-
-  function kerangka() {
-    var petakKosong = '<div class="petak petak--kosong"></div>';
-    el.isi.innerHTML = '<div class="petakan">' + petakKosong + petakKosong +
-      petakKosong + petakKosong + "</div>";
   }
 
   el.mata.addEventListener("click", function () {
     if (!el.kotak.open) el.kotak.showModal();
     el.kotak.focus();
-    muat();
+    tampilkan();
   });
 
   el.kotak.addEventListener("click", function (e) {
     if (e.target === el.kotak || e.target.closest("[data-statistik-tutup]")) {
       el.kotak.close();
-      return;
     }
-    var pilih = e.target.closest("[data-rentang]");
-    if (!pilih) return;
-    var nilai = Number(pilih.getAttribute("data-rentang")) || 0;
-    if (nilai === rentang) return;
-    rentang = nilai;
-    Array.prototype.forEach.call(
-      el.segmen.querySelectorAll("[data-rentang]"),
-      function (b) {
-        b.setAttribute("aria-pressed", b === pilih ? "true" : "false");
-      }
-    );
-    muat();
   });
 
-  // Catat kunjungan dulu supaya angka di tombol sudah termasuk kunjungan ini.
-  catatKunjungan()
-    .then(function () { return ambil(0); })
-    .catch(function () {});
+  catatKunjungan();
+  muat();
 })();

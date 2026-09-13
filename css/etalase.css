@@ -88,11 +88,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .mata:hover circle{fill:currentColor}
 }
 .mata:active{transform:scale(.94)}
-.mata__n{animation:kabur-masuk .5s var(--kurva) both}
 .mata[hidden]{display:none}
-@media (prefers-reduced-motion:reduce){
-  .mata__n{animation:none}
-}
 
 .bulat{
   flex:0 0 auto;
@@ -504,22 +500,6 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 .statistik__tutup svg{width:16px; height:16px}
 @media (hover:hover){
   .statistik__tutup:hover{background:var(--isian-2); box-shadow:none; color:var(--label)}
-}
-
-.segmen{
-  display:flex; gap:2px;
-  margin:14px 22px 0; padding:2px;
-  background:var(--isian); border-radius:999px;
-}
-.segmen button{
-  flex:1 1 0; min-height:31px; border-radius:999px;
-  font-size:13px; font-weight:500; color:var(--label-2);
-  cursor:pointer;
-  transition:background .18s ease, color .18s ease;
-}
-.segmen button[aria-pressed="true"]{
-  background:var(--kartu); color:var(--label); font-weight:600;
-  box-shadow:0 1px 3px rgba(0,0,0,.14);
 }
 
 .statistik__isi{padding:4px 22px 18px}

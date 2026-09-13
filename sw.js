@@ -18,7 +18,7 @@
 // Statistik pengunjung (beda origin) sengaja dilewatkan begitu saja: angkanya
 // harus selalu segar dan permintaannya POST.
 
-const VERSI = "2026-09-10a";   // naikkan tiap deploy -> cache kode lama dibuang
+const VERSI = "2026-09-13a";   // naikkan tiap deploy -> cache kode lama dibuang
 const VERSI_GAMBAR = "1";      // naikkan HANYA bila ada gambar diganti isi dengan nama sama
 
 const KODE = "rmbg-kode-" + VERSI;
