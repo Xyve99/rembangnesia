@@ -25,6 +25,8 @@
     zoom: document.querySelector("[data-zoom]"),
     pGambar: document.querySelector("[data-pratinjau-gambar]"),
     pKode: document.querySelector("[data-pratinjau-kode]"),
+    pDeskripsi: document.querySelector("[data-pratinjau-deskripsi]"),
+    pTeks: document.querySelector("[data-pratinjau-teks]"),
     pTandai: document.querySelector("[data-pratinjau-tandai]"),
     pKirim: document.querySelector("[data-pratinjau-kirim]")
   };
@@ -265,6 +267,19 @@
     return el.panggung.classList.contains("zoom");
   }
 
+  // Keterangan yang panjang menggulir di dalam kotaknya sendiri. Wadah yang
+  // bisa digulir tapi tidak bisa difokuskan cuma terjangkau tetikus (axe:
+  // scrollable-region-focusable — sama seperti panggung saat terzoom). Panjang
+  // teks beda-beda dan tinggi dialog ikut berubah saat jendela diubah
+  // ukurannya, jadi tabindex-nya disetel ulang, bukan dipasang sekali.
+  function siapGulirDeskripsi() {
+    var kotak = el.pDeskripsi;
+    var perlu = el.pratinjau.open && !kotak.hidden &&
+      kotak.scrollHeight > kotak.clientHeight + 1;
+    if (perlu) kotak.setAttribute("tabindex", "0");
+    else kotak.removeAttribute("tabindex");
+  }
+
   function pasangGeser() {
     var s = el.panggung;
     var tarik = false;
@@ -317,9 +332,19 @@
     el.pGambar.src = "img/desain/galeri/" + d.kode + ".webp";
     el.pTandai.innerHTML = tombol(d.kode);
     el.pKirim.href = tautan([d]);
+    // Keterangan ditulis lewat textContent, bukan innerHTML: teksnya datang
+    // dari model, jadi tidak boleh ada satu pun bagiannya yang diperlakukan
+    // sebagai markup. Baris baru dan tanda "-" tetap tampil utuh karena
+    // .pratinjau__teks memakai white-space:pre-line.
+    var teks = (d.deskripsi || "").trim();
+    el.pTeks.textContent = teks;
+    el.pDeskripsi.hidden = !teks;
     setZoom(false);
     if (!el.pratinjau.open) el.pratinjau.showModal();
     el.pratinjau.focus();
+    // Baru setelah dialognya terbuka ukurannya bisa diukur: selama tertutup
+    // displaynya none, jadi scrollHeight dan clientHeight sama-sama nol.
+    siapGulirDeskripsi();
 
     var penuh = new Image();
     penuh.onload = function () {
@@ -371,7 +396,11 @@
       if (pilih) tandai(pilih.getAttribute("data-tandai"));
     });
 
-    el.pratinjau.addEventListener("close", function () { setZoom(false); });
+    el.pratinjau.addEventListener("close", function () {
+      setZoom(false);
+      siapGulirDeskripsi();
+    });
+    window.addEventListener("resize", siapGulirDeskripsi);
 
     el.kosongkan.addEventListener("click", function () {
       var lama = pilihan.slice();

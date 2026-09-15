@@ -20,7 +20,7 @@ berbeda.
 plus penimpaan manual `:root[data-theme="dark"]`. Urutan ini yang membuat tombol
 tema bisa mengalahkan preferensi sistem tanpa `!important`.
 
-## Jebakan kaskade yang sudah menggigit dua kali
+## Jebakan kaskade yang sudah menggigit tiga kali
 
 Aturan `.banner__scrim` versi sempit **harus** berada setelah aturan dasarnya.
 Spesifisitasnya sama, jadi yang menang adalah yang belakangan di sumber. Kalau
@@ -29,6 +29,18 @@ media query dipindah ke atas, scrim vertikal untuk mobile tidak akan pernah akti
 Hal serupa: `.banner__inner` juga ber-class `.shell`, yang punya
 `margin-inline:auto`. Memberi `max-width` ke elemen itu akan menengahkannya
 kembali; batasi anaknya (`.banner__inner > *`) sebagai gantinya.
+
+Yang ketiga beda jenisnya: aturan bawaan peramban bukan sekadar spesifisitas
+rendah, tapi **selalu kalah** dari aturan penulis. `<dialog>` yang tertutup
+disembunyikan oleh `dialog:not([open]){display:none}` bawaan peramban — jadi
+begitu ada aturan penulis yang menyetel `display` pada dialognya (di sini
+`.pratinjau{display:flex}` supaya isinya bisa dibagi tinggi), dialog tertutup
+tetap tergambar dan **tetap menerima klik**. Karena `.pratinjau` juga
+`opacity:0` saat tertutup, gejalanya menipu: halamannya kelihatan normal, tapi
+seluruh galeri tidak bisa diklik lagi setelah pratinjau pernah dibuka. Yang
+menutupi kartu tidak terlihat. Penawarnya satu baris, `.pratinjau:not([open]){display:none}`,
+dan animasi tutupnya tetap jalan karena `display` ada di daftar `transition`
+dengan `allow-discrete`.
 
 ## Titik putus banner
 
@@ -142,6 +154,29 @@ Dua catatan soal alat ukurnya, karena keduanya buta di tempat yang berbeda:
 Wadah pratinjau yang terzoom (`[data-panggung].zoom`) diberi `tabindex` oleh
 `setZoom()` supaya isinya bisa digeser dengan keyboard. Tanpa itu axe
 menandainya `scrollable-region-focusable`.
+
+## Keterangan desain dari AI
+
+Teksnya ditulis `bukaPratinjau()` lewat `textContent`, **tidak pernah**
+`innerHTML`: isinya datang dari model, jadi tidak boleh ada satu bagian pun yang
+diperlakukan sebagai markup. Baris baru dan tanda "-" tetap tampil apa adanya
+karena `.pratinjau__teks` memakai `white-space:pre-line`.
+
+Saat muncul, blok ini menambah satu isi lagi ke dalam dialog — dan `.pratinjau`
+memakai `overflow:hidden`, jadi yang meluber bukan cuma terpotong, tapi tidak
+bisa dijangkau sama sekali. Karena itu `.pratinjau` dijadikan flex kolom:
+gambar, strip peringatan, dan kaki dialog `flex:0 0 auto` (tidak boleh
+menyusut), sedangkan keterangan yang `flex:0 1 auto` berikut `overflow-y:auto`.
+Keterangan yang panjang menggulir di dalam kotaknya sendiri; kaki dialog tetap
+di tempatnya. Tinggi gambar ikut dikorbankan lewat `:has()` saat keterangannya
+ada.
+
+Kotak yang menggulir itu juga perlu `tabindex`, sama seperti panggung terzoom —
+tapi panjang teksnya berbeda-beda per desain dan tinggi dialog ikut berubah
+saat jendela diubah ukurannya, jadi `siapGulirDeskripsi()` menyetel ulang
+atributnya alih-alih memasangnya sekali. Diukur setelah `showModal()`, sebab
+selama tertutup `display`-nya `none` dan `scrollHeight` sama dengan
+`clientHeight`.
 
 ## Utang yang diketahui
 

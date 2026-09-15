@@ -425,6 +425,49 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   font-size:13px; line-height:1.4; color:var(--label-2);
 }
 .ingat svg{width:16px; height:16px; flex:0 0 auto; margin-top:1px; color:#B25E00}
+/* Keterangan desain dari AI. Dialognya jadi flex kolom supaya bagian ini yang
+   mengalah saat ruang sempit: ia menggulir sendiri, sedangkan gambar, strip
+   peringatan, dan kakinya tidak boleh menyusut. Tanpa itu, keterangan panjang
+   mendorong kaki dialog keluar dari area yang terlihat — dan .pratinjau
+   memakai overflow:hidden, jadi yang keluar memang tidak bisa dijangkau. */
+.pratinjau{display:flex; flex-direction:column}
+/* Satu baris ini wajib ada. Sebelum dialognya jadi flex, yang menyembunyikan
+   dialog saat tertutup adalah aturan bawaan peramban dialog:not([open]) — dan
+   aturan bawaan kalah dari aturan penulis, jadi begitu kita menyetel display
+   sendiri, dialog tertutup tetap tergambar (opacity:0) dan tetap menerima
+   klik. Akibatnya seluruh galeri tidak bisa diklik sama sekali setelah
+   pratinjau pernah dibuka. */
+.pratinjau:not([open]){display:none}
+.pratinjau__gambar,
+.ingat,
+.pratinjau__kaki{flex:0 0 auto}
+.pratinjau__deskripsi{
+  display:flex; flex-direction:column; gap:5px;
+  flex:0 1 auto; min-height:0;
+  padding:12px 18px 13px;
+  background:var(--bg);
+  border-top:1px solid var(--garis);
+  overflow-y:auto; overscroll-behavior:contain;
+}
+.pratinjau__deskripsi[hidden]{display:none}
+.pratinjau__deskripsi:focus-visible{outline-offset:-3px}
+.pratinjau__ai{
+  flex:0 0 auto;
+  font-size:11px; font-weight:600; letter-spacing:.03em;
+  text-transform:uppercase; color:var(--label-2);
+}
+.pratinjau__teks{
+  font-size:14px; line-height:1.5; color:var(--label);
+  white-space:pre-line;
+}
+/* Ada keterangan berarti ada satu blok lagi yang harus muat. Gambarnya yang
+   dikorbankan, bukan keterangannya. */
+.pratinjau:has([data-pratinjau-deskripsi]:not([hidden])) .pratinjau__gambar img{
+  max-height:calc(100dvh - 400px);
+}
+.pratinjau:has([data-pratinjau-deskripsi]:not([hidden])) .pratinjau__gambar.zoom img{
+  max-height:none;
+}
 .pratinjau__kaki{
   display:flex; align-items:center; justify-content:space-between;
   gap:14px; padding:12px 14px 14px 18px;
