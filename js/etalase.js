@@ -246,10 +246,15 @@
     if (aktif) {
       s.style.height = s.offsetHeight + "px";
       s.classList.add("zoom");
+      // Terzoom = wadahnya jadi bisa digeser. Tanpa tabindex, isi yang bisa
+      // di-scroll ini cuma terjangkau tetikus — keyboard tidak punya cara
+      // menggesernya (axe: scrollable-region-focusable).
+      s.setAttribute("tabindex", "0");
       s.scrollLeft = (s.scrollWidth - s.clientWidth) * (x === undefined ? 0.5 : x);
       s.scrollTop = (s.scrollHeight - s.clientHeight) * (y === undefined ? 0.5 : y);
     } else {
       s.classList.remove("zoom", "geser");
+      s.removeAttribute("tabindex");
       s.style.height = "";
     }
     el.zoom.setAttribute("aria-pressed", aktif ? "true" : "false");

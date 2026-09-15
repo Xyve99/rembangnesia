@@ -82,6 +82,63 @@ async function buka(p,alamat){
   await p.waitForTimeout(1500);
 }
 
+// ---------- pengukuran ----------
+
+// Rasio kontras dihitung dari warna yang dideklarasikan, bukan dari piksel.
+// Dua akibatnya: latar bergambar ditandai `over` dan tidak diadili di sini
+// (banner diukur terpisah oleh tools/bg.js + contrast.py), dan isi dialog ikut
+// terukur asal dialognya memang sedang terbuka.
+function ukurKontras(p){
+  return p.evaluate(()=>{
+    const parse=c=>{const m=c.match(/[\d.]+/g);return m?[+m[0],+m[1],+m[2],m[3]!==undefined?+m[3]:1]:null};
+    const lum=([r,g,b])=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(r)+.7152*f(g)+.0722*f(b)};
+    const ratio=(a,b)=>{const L1=lum(a),L2=lum(b);return (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05)};
+    function bgOf(el){let e=el;while(e&&e!==document.documentElement){const s=getComputedStyle(e);const c=parse(s.backgroundColor);
+      if(c&&c[3]>.85)return{c,from:e.tagName+'.'+(e.className||'').toString().slice(0,30),img:s.backgroundImage!=='none'};
+      if(s.backgroundImage&&s.backgroundImage!=='none')return{c:null,from:e.tagName,imageOnly:true};e=e.parentElement;}
+      return {c:parse(getComputedStyle(document.body).backgroundColor)||[0,0,0,1],from:'body'};}
+    const out=[];
+    for(const el of document.querySelectorAll('h1,h2,h3,h4,p,a,span,li,button,label,small,b,i,td,th,time,dt,dd,figcaption,caption,blockquote')){
+      const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+      if(r.width<1||r.height<1||s.visibility==='hidden'||s.display==='none'||+s.opacity<.2)continue;
+      if(![...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim().length>1))continue;
+      const fg=parse(s.color); if(!fg)continue;
+      const bg=bgOf(el); const fs=parseFloat(s.fontSize), fw=+s.fontWeight||400;
+      const large=fs>=24||(fs>=18.66&&fw>=700);
+      if(!bg.c){out.push({over:true,tag:el.tagName,fs,text:(el.innerText||'').trim().slice(0,40),color:s.color});continue}
+      const rr=+ratio(fg.slice(0,3),bg.c.slice(0,3)).toFixed(2);
+      const min=large?3:4.5;
+      out.push({tag:el.tagName,fs:Math.round(fs),fw,large,ratio:rr,min,pass:rr>=min,color:s.color,
+        bg:`rgb(${bg.c[0]}, ${bg.c[1]}, ${bg.c[2]})`,bgFrom:bg.from,text:(el.innerText||'').trim().replace(/\s+/g,' ').slice(0,48)});
+    }
+    return out;
+  });
+}
+
+// Ringkasan axe dipangkas supaya laporan tidak membengkak; node contohnya
+// cukup satu per aturan untuk tahu apa yang harus dibuka.
+function ringkasAxe(a){
+  if(!a||a.gagal)return a;
+  return {
+    violations:a.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,n:v.n,contoh:v.nodes[0]})),
+    incomplete:a.incomplete.map(v=>({id:v.id,impact:v.impact,n:v.n}))
+  };
+}
+
+async function jalankanAxe(p){
+  try{
+    await p.evaluate(AXE);
+    const r=await p.evaluate(async()=>{const r=await axe.run(document,{resultTypes:['violations','incomplete'],
+      runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa','best-practice']}});
+      return{violations:r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,n:v.nodes.length,
+        nodes:v.nodes.slice(0,5).map(x=>({t:x.target.join(' '),html:(x.html||'').slice(0,150),why:(x.failureSummary||'').slice(0,220)}))})),
+      incomplete:r.incomplete.map(v=>({id:v.id,impact:v.impact,n:v.nodes.length,nodes:v.nodes.slice(0,3).map(x=>({t:x.target.join(' '),html:(x.html||'').slice(0,120)}))}))};});
+    return r;
+  }catch(e){
+    return {gagal:String(e.message).slice(0,200)};
+  }
+}
+
 // ---------- interaksi: etalase ----------
 
 async function etalaseGaleri(b){
@@ -134,6 +191,10 @@ async function etalaseGaleri(b){
  await p.locator('[data-zoom]').click(); await p.waitForTimeout(500);
  h.zoomAktif=await p.locator('[data-panggung]').evaluate(e=>e.classList.contains('zoom'));
  await p.screenshot({path:OUT+'/rmb-etalase-pratinjau.png'});
+ // Isi dialog tidak pernah diukur pihak lain: tertutup berarti display:none.
+ // Justru di sinilah teks terkecil halaman berada, jadi diukur saat terbuka.
+ h.pratinjauKontrasGagal=(await ukurKontras(p)).filter(c=>!c.over&&!c.pass);
+ h.pratinjauAxe=ringkasAxe(await jalankanAxe(p));
  await p.keyboard.press('Escape'); await p.waitForTimeout(600);
  h.pratinjauTertutup=await p.locator('[data-pratinjau]').evaluate(d=>d.open);
 
@@ -155,6 +216,8 @@ async function etalaseGaleri(b){
  h.sekilasLayanan=await p.locator('[data-statistik-isi] .rangking__baris').count();
  h.sekilasTeks=(await p.locator('[data-statistik-isi]').innerText()).replace(/\s+/g,' ').slice(0,160);
  await p.screenshot({path:OUT+'/rmb-etalase-sekilas.png'});
+ h.sekilasKontrasGagal=(await ukurKontras(p)).filter(c=>!c.over&&!c.pass);
+ h.sekilasAxe=ringkasAxe(await jalankanAxe(p));
  await p.keyboard.press('Escape'); await p.waitForTimeout(500);
 
  // Pilihan harus selamat dari muat ulang, dan layar selamat datang tidak boleh
@@ -184,6 +247,11 @@ async function etalaseSempit(b){
  h.tombolKirim=await p.locator('[data-kirim]').boundingBox();
  h.dokumen=await p.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));
  await p.screenshot({path:OUT+'/rmb-etalase-m-pilihan.png'});
+ // Panel Sekilas di layar sempit: di sinilah paddingnya paling rapat.
+ await p.locator('[data-mata]').click(); await p.waitForTimeout(1200);
+ h.sekilasSempitKontrasGagal=(await ukurKontras(p)).filter(c=>!c.over&&!c.pass);
+ h.sekilasSempitPetak=await p.locator('[data-statistik-isi] .petak').count();
+ await p.screenshot({path:OUT+'/rmb-etalase-m-sekilas.png'});
  await ctx.close();
  return h;
 }
@@ -353,39 +421,9 @@ async function profilTenang(b){
       };
     });
 
-    const contrast=await p.evaluate(()=>{
-      const parse=c=>{const m=c.match(/[\d.]+/g);return m?[+m[0],+m[1],+m[2],m[3]!==undefined?+m[3]:1]:null};
-      const lum=([r,g,b])=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(r)+.7152*f(g)+.0722*f(b)};
-      const ratio=(a,b)=>{const L1=lum(a),L2=lum(b);return (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05)};
-      function bgOf(el){let e=el;while(e&&e!==document.documentElement){const s=getComputedStyle(e);const c=parse(s.backgroundColor);
-        if(c&&c[3]>.85)return{c,from:e.tagName+'.'+(e.className||'').toString().slice(0,30),img:s.backgroundImage!=='none'};
-        if(s.backgroundImage&&s.backgroundImage!=='none')return{c:null,from:e.tagName,imageOnly:true};e=e.parentElement;}
-        return {c:parse(getComputedStyle(document.body).backgroundColor)||[0,0,0,1],from:'body'};}
-      const out=[];
-      for(const el of document.querySelectorAll('h1,h2,h3,h4,p,a,span,li,button,label,small,b,i,td,th,time,dt,dd,figcaption,caption,blockquote')){
-        const r=el.getBoundingClientRect(),s=getComputedStyle(el);
-        if(r.width<1||r.height<1||s.visibility==='hidden'||s.display==='none'||+s.opacity<.2)continue;
-        if(![...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim().length>1))continue;
-        const fg=parse(s.color); if(!fg)continue;
-        const bg=bgOf(el); const fs=parseFloat(s.fontSize), fw=+s.fontWeight||400;
-        const large=fs>=24||(fs>=18.66&&fw>=700);
-        if(!bg.c){out.push({over:true,tag:el.tagName,fs,text:(el.innerText||'').trim().slice(0,40),color:s.color});continue}
-        const rr=+ratio(fg.slice(0,3),bg.c.slice(0,3)).toFixed(2);
-        const min=large?3:4.5;
-        out.push({tag:el.tagName,fs:Math.round(fs),fw,large,ratio:rr,min,pass:rr>=min,color:s.color,
-          bg:`rgb(${bg.c[0]}, ${bg.c[1]}, ${bg.c[2]})`,bgFrom:bg.from,text:(el.innerText||'').trim().replace(/\s+/g,' ').slice(0,48)});
-      }
-      return out;
-    });
-
-    let axe=null;
-    try{ await p.evaluate(AXE);
-      axe=await p.evaluate(async()=>{const r=await axe.run(document,{resultTypes:['violations','incomplete'],
-        runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa','best-practice']}});
-        return{violations:r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,n:v.nodes.length,
-          nodes:v.nodes.slice(0,5).map(x=>({t:x.target.join(' '),html:(x.html||'').slice(0,150),why:(x.failureSummary||'').slice(0,220)}))})),
-        incomplete:r.incomplete.map(v=>({id:v.id,impact:v.impact,n:v.nodes.length,nodes:v.nodes.slice(0,3).map(x=>({t:x.target.join(' '),html:(x.html||'').slice(0,120)}))}))};});
-    }catch(e){errs.push('axe: '+e.message)}
+    const contrast=await ukurKontras(p);
+    const axe=ringkasAxe(await jalankanAxe(p));
+    if(axe&&axe.gagal)errs.push('axe: '+axe.gagal);
 
     out[key]={diag,contrastFails:contrast.filter(c=>!c.over&&!c.pass),overImage:contrast.filter(c=>c.over),
       contrastCount:contrast.length,axe,errors:errs};

@@ -82,17 +82,78 @@ dengan GStreamer.
 
 ## Ambang yang dijaga suite
 
-`tools/check.js` gagal kalau ada: pelanggaran axe (WCAG 2 A/AA + 2.1/2.2 AA),
-kontras di bawah 4.5:1 (3:1 untuk teks besar) pada 181–187 pengukuran, target
-sentuh di bawah 44px, overflow horizontal, atau error konsol. Semuanya nol per
-commit terakhir, di 7 viewport termasuk mode gelap.
+`tools/check.js` mengaudit dua halaman — etalase (`npm run check`) dan halaman
+profil (`npm run check:profil`) — dan mencatat: pelanggaran axe (WCAG 2 A/AA +
+2.1/2.2 AA), kontras di bawah 4.5:1 (3:1 untuk teks besar) pada 38 pengukuran di
+etalase dan 181–187 di halaman profil, target sentuh di bawah 44px, overflow
+horizontal, dan error konsol. Di etalase, per commit terakhir: nol kontras
+gagal, nol error konsol, nol overflow, nol pelanggaran WCAG di 7 viewport
+termasuk mode gelap. Sisa satu pelanggaran `region` (best-practice) dan satu
+target 42×34px, keduanya tercatat sebagai utang di bawah.
 
 Kontras banner diukur dengan cara yang lebih keras daripada axe: `bg.js`
 menyembunyikan teksnya lalu memotret latar, `contrast.py` menghitung rasio
 terhadap **piksel latar terburuk di dalam kotak setiap blok teks**, bukan
 terhadap warna latar yang dideklarasikan. Kasus terburuk 6.03:1.
 
+## Warna teks: kenapa cuma dua tingkat
+
+Yang mengikat nilai `--label-2` bukan permukaan yang paling sering terlihat,
+tapi permukaan **tergelap** yang pernah ia tempati. Delapan permukaan berbeda
+memakainya, dan yang paling gelap adalah `.petak--utama`: tint
+`rgba(0,122,255,.1)` menumpuk di atas `--bg` dan menghasilkan #DAE6F8, lebih
+gelap daripada putihnya kartu.
+
+| permukaan | #6A6A70 (lama) | #64646A (sekarang) |
+|---|---|---|
+| kartu putih | 5.37:1 | 5.88:1 |
+| body / `.petak` (#F2F2F7) | 4.82:1 | 5.27:1 |
+| `.petak--utama` (#DAE6F8) | **4.26:1** | 4.66:1 |
+| `.mata` (isian di atas bilah kaca) | **4.21:1** | 4.60:1 |
+
+Nilai lama lulus di kartu dan di body, lalu jatuh di dua permukaan tergelap.
+Yang kedua bahkan tidak pernah muncul di suite: tombol Sekilas baru ada kalau
+server statistik menjawab, sedangkan audit memadamkannya supaya angka
+pengunjung pemilik etalase tidak tercemar lalu lintas audit.
+
+Tingkat teks ketiga tidak mungkin ada. Mencari 4.5:1 untuk teks 12px memaksa
+nilai ketiga sama persis dengan `--label-2`. Jadi `--label-3` dihapus, dan
+sisanya yang memang dekoratif dinamai `--panah` — panah bukan teks, ambangnya
+3:1, bukan 4.5:1. Membiarkan nama berawalan "label" untuk warna yang tidak boleh
+dipakai sebagai teks adalah jebakan yang menunggu dipakai ulang.
+
+`--label-2` sengaja warna solid, bukan alpha. Di atas permukaan kaca
+(`backdrop-filter`) hasil komposit alpha bergantung pada isi halaman di
+belakangnya dan berubah saat digulir, sedangkan warna solid memberi rasio yang
+sama di mana pun.
+
+Dua catatan soal alat ukurnya, karena keduanya buta di tempat yang berbeda:
+
+- axe benar menghitung latar ber-alpha, tapi melewatkan isi dialog yang tertutup
+  (`display:none`) dan menandai permukaan kaca sebagai `incomplete`. Justru di
+  dalam dialog itu teks terkecil halaman berada, jadi suite membuka dialognya
+  dulu baru mengukur.
+- `ukurKontras()` di `tools/check.js` menghitung dari warna yang
+  **dideklarasikan** dan menandai latar bergambar sebagai `over`, jadi ia buta
+  terhadap alpha. Ia tidak boleh jadi satu-satunya hakim: `.petak__c` di dalam
+  `.petak--utama` hanya tertangkap axe, sedangkan `.btn` di dalam dialog
+  tertutup hanya tertangkap `ukurKontras()`.
+
+Wadah pratinjau yang terzoom (`[data-panggung].zoom`) diberi `tabindex` oleh
+`setZoom()` supaya isinya bisa digeser dengan keyboard. Tanpa itu axe
+menandainya `scrollable-region-focusable`.
+
 ## Utang yang diketahui
+
+Bilah pilihan melayang (`.pilihan`) berdiri di luar landmark mana pun, jadi axe
+menandainya `region` (best-practice, bukan WCAG). Perbaikannya entah
+memindahkannya ke dalam `<main>` atau memberinya `role="region"` berikut
+`aria-label`. Dua node yang sama, satu perbaikan.
+
+Tombol Sekilas (`.mata`) berukuran 42×34px, di bawah ambang 44px yang dipakai
+suite ini — walaupun lolos minimum 24×24 WCAG 2.2 AA. Menjadikannya 44px tinggi
+akan mengubah tinggi bilah header yang sekarang sejajar dengan logo 32px, jadi
+ini ditunda sampai ada alasan selain angka.
 
 Video hero membawa watermark "Dola AI" di kanan bawah, terlihat di atas strip
 statistik gelap. Menghilangkannya perlu crop ~4% dari sisi bawah lalu transcode
