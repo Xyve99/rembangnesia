@@ -179,17 +179,32 @@ selama tertutup `display`-nya `none` dan `scrollHeight` sama dengan
 `clientHeight`.
 
 Kunjungan pertama ke sebuah desain memutar ilusi keterangannya baru saja
-ditulis: diam sejenak dengan kursor berkedip, lalu hurufnya menyusul dengan
-kecepatan yang melambat di ujung. Sekali per orang per desain — daftarnya
-disimpan di `localStorage` (`rmbg.lihat`) dan yang sudah pernah dibuka muncul
-langsung. Yang membuatnya tidak menggeser tata letak: dua lapis ditumpuk di
-satu sel grid (`.pratinjau__ukur` yang tak terlihat berisi teks penuh,
-`.pratinjau__alir` yang isinya bertambah). Keduanya selebar sama dan berisi teks
-yang sama, jadi patahan barisnya identik dan tinggi bloknya sudah final sejak
-huruf pertama. Kursor di kedua lapis sengaja tetap punya kotak walau tak
-terlihat: kalau kotaknya hilang saat aliran selesai, patahan barisnya bergeser
-satu kata di detik terakhir. Suite menunggu `[data-alir="selesai"]` sebelum
-mengukur apa pun di dalam dialog.
+ditulis: dua detik diam dengan kursor berkedip, lalu katanya naik satu per satu.
+Sekali per orang per desain — daftarnya disimpan di `localStorage`
+(`rmbg.lihat`) dan yang sudah pernah dibuka muncul langsung.
+
+Caranya bukan menulis ulang teksnya per frame seperti versi pertama, tapi
+memecahnya jadi `<span>` per kata sekali di muka, menaruh semuanya di DOM sejak
+awal, dan membiarkan kata yang belum giliran transparan. Yang bergerak cuma
+`opacity` dan `transform` — dua sifat yang dikerjakan kompositor. Diukur lewat
+CDP selama dua detik: cara lama membakar 56 ms layout + 15 ms hitung gaya,
+cara ini nol di keduanya, dan total waktu main thread turun dari 194 ms ke
+33 ms. Tinggi bloknya juga sudah final sebelum kata pertama muncul — tidak ada
+lagi lapis ukur kedua yang harus dijaga tetap sama, karena tidak ada apa pun
+yang berubah ukuran selama alirannya.
+
+Kursor berkedip itu duduk di dalam jangkar selebar nol (`.pratinjau__jangkar`),
+jadi ia punya kotak untuk digambar tapi tidak menggeser kata pertama sedikit
+pun. Suite menunggu `[data-alir="selesai"]` sebelum mengukur apa pun di dalam
+dialog — jangan dihapus, ukuran di tengah aliran bukan ukuran akhir.
+
+Satu catatan yang belum ditindak: seluruh biaya frame saat dialog terbuka
+datang dari `backdrop-filter` di `.pratinjau[open]::backdrop`, bukan dari
+animasinya. Diukur tanpa akselerasi perangkat keras, dialog yang terbuka dan
+sama sekali tidak beranimasi pun jatuh ke ~9 fps, dan menghapus
+`backdrop-filter`-nya mengembalikan 60 fps yang rata — dengan seluruh 149 kata
+tetap beranimasi. Artinya kabut di belakang dialog itu yang mahal, bukan
+teksnya.
 
 ## Utang yang diketahui
 

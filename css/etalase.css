@@ -384,6 +384,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .pratinjau,
   .pratinjau::backdrop{transition:none}
   .pratinjau{transform:none}
+  .pratinjau__kata,
   .pratinjau__kursor{animation:none}
 }
 .pratinjau__gambar{position:relative; background:var(--bg); overflow:hidden}
@@ -460,30 +461,41 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 }
 .pratinjau__ai svg{width:14px; height:14px; flex:0 0 auto}
 .pratinjau__teks{
-  display:grid;
   font-size:14px; line-height:1.5; color:var(--label);
   white-space:pre-line;
 }
-/* Keterangan yang baru pertama kali dibuka terlihat seperti sedang ditulis.
-   Dua lapis ditumpuk di sel grid yang sama: lapis ukur berisi teks penuh tapi
-   tanpa tinta, lapis alir yang isinya bertambah sedikit demi sedikit. Karena
-   keduanya selebar sama dan berisi teks yang sama, patahan barisnya identik —
-   jadi tinggi bloknya sudah final sejak awal dan kaki dialog tidak bergerak
-   naik-turun selama teksnya mengalir. */
-.pratinjau__teks > *{grid-area:1/1; min-width:0; margin:0}
-.pratinjau__ukur{visibility:hidden}
-/* Kursor tetap punya kotak walau tak terlihat, di kedua lapis. Kalau kotaknya
-   hilang saat aliran selesai, patahan barisnya bergeser satu kata di detik
-   terakhir — persis yang mau dihindari. */
+/* Keterangan yang baru pertama kali dibuka terlihat sedang ditulis: kursor
+   berkedip dulu, lalu katanya menyusul naik satu per satu.
+   Seluruh paragraf sudah ada di DOM sejak awal dan yang belum giliran cuma
+   transparan. Dua keuntungan sekaligus: tingginya sudah final sebelum kata
+   pertama muncul (kaki dialog tidak pernah bergeser), dan yang dianimasikan
+   cuma opacity dan transform — dua sifat yang dikerjakan kompositor tanpa
+   menghitung ulang tata letak. Tidak ada teks yang ditulis ulang per frame
+   seperti versi sebelumnya, jadi tidak ada yang bisa bikin ngeframe. */
+.pratinjau__kata{display:inline-block}
+.pratinjau__teks[data-alir="menunggu"] .pratinjau__kata{opacity:0}
+.pratinjau__teks[data-alir="menulis"] .pratinjau__kata{
+  animation:naik .34s var(--kurva) both;
+}
+@keyframes naik{
+  from{opacity:0; transform:translateY(.42em)}
+  to{opacity:1; transform:none}
+}
+/* Kursor tidak boleh menggeser teks sesudahnya, jadi jangkarnya selebar nol:
+   kotaknya nol dan patahan barisnya sama seperti tanpa kursor, tapi kursornya
+   tetap tergambar karena meluber keluar. */
+.pratinjau__jangkar{display:inline-block; width:0}
 .pratinjau__kursor{
-  display:inline-block; width:2px; height:1.05em; margin-left:2px;
+  display:inline-block; width:2px; height:1.05em;
   vertical-align:-.17em; background:currentColor; opacity:0;
 }
-.pratinjau__alir.menunggu .pratinjau__kursor{
+.pratinjau__teks[data-alir="menunggu"] .pratinjau__kursor{
   opacity:1; animation:kedip 1.05s steps(1, end) infinite;
 }
-.pratinjau__alir.mengalir .pratinjau__kursor{opacity:.5}
+/* Begitu kata pertama naik, kursornya ikut pudar — bukan hilang mendadak. */
+.pratinjau__teks[data-alir="menulis"] .pratinjau__kursor{animation:pudar .3s ease-out both}
 @keyframes kedip{0%,45%{opacity:1}50%,100%{opacity:0}}
+@keyframes pudar{from{opacity:1}to{opacity:0}}
 /* Ada keterangan berarti ada satu blok lagi yang harus muat. Gambarnya yang
    dikorbankan, bukan keterangannya. */
 .pratinjau:has([data-pratinjau-deskripsi]:not([hidden])) .pratinjau__gambar img{

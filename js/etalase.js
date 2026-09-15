@@ -31,9 +31,7 @@
     pKode: document.querySelector("[data-pratinjau-kode]"),
     pDeskripsi: document.querySelector("[data-pratinjau-deskripsi]"),
     pTeks: document.querySelector("[data-pratinjau-teks]"),
-    pPenuh: document.querySelector("[data-pratinjau-penuh]"),
-    pAlir: document.querySelector("[data-pratinjau-alir]"),
-    pPotong: document.querySelector("[data-pratinjau-potong]"),
+    pIsi: document.querySelector("[data-pratinjau-isi]"),
     pTandai: document.querySelector("[data-pratinjau-tandai]"),
     pKirim: document.querySelector("[data-pratinjau-kirim]")
   };
@@ -234,59 +232,73 @@
       window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }
 
-  var JEDA_TULIS = 430;    // ms diam dulu, seperti sedang menyusun kalimat
-  var LAMA_DASAR = 380;
-  var LAMA_PER_HURUF = 0.75;
-  var LAMA_MAKS = 1500;
-  var alirRaf = 0;
+  var JEDA_TULIS = 2000;   // ms diam dulu, kursor berkedip
+  var LAMA_DASAR = 800;
+  var LAMA_PER_KATA = 16;
+  var LAMA_MAKS = 3600;
   var alirJeda = 0;
 
   function hentikanAlir() {
-    if (alirRaf) { cancelAnimationFrame(alirRaf); alirRaf = 0; }
     if (alirJeda) { clearTimeout(alirJeda); alirJeda = 0; }
-    el.pAlir.classList.remove("menunggu", "mengalir");
+    el.pTeks.removeAttribute("data-alir");
   }
 
-  /* Teks penuhnya dipasang di lapis ukur yang tak terlihat, jadi tingginya
-     sudah final sebelum satu huruf pun muncul. Lapis alir yang diisi bertahap:
-     mula-mula diam dengan kursor berkedip, lalu hurufnya menyusul dengan
-     kecepatan yang melambat di ujung — bukan ketukan mesin tik yang rata, dan
-     bukan kilau yang menyapu teks. Kursor berhenti berkedip begitu menulis
-     dimulai, lalu tinggal samar sebelum hilang. */
+  /* Teksnya dipecah jadi kata dan pemisahnya dibiarkan apa adanya, supaya
+     patahan barisnya sama persis dengan teks aslinya. Kata yang belum giliran
+     cuma transparan, jadi seluruh paragraf sudah menempati ruangnya sejak awal
+     — tingginya final sebelum kata pertama muncul. */
+  function pecahKata(teks) {
+    var bagian = teks.split(/(\s+)/);
+    var serpih = document.createDocumentFragment();
+    var kata = [];
+    for (var i = 0; i < bagian.length; i++) {
+      var s = bagian[i];
+      if (!s) continue;
+      if (/^\s+$/.test(s)) {
+        serpih.appendChild(document.createTextNode(s));
+        continue;
+      }
+      var k = document.createElement("span");
+      k.className = "pratinjau__kata";
+      k.textContent = s;
+      serpih.appendChild(k);
+      kata.push(k);
+    }
+    return {serpih: serpih, kata: kata};
+  }
+
+  /* Kursor berkedip dulu, lalu katanya naik satu per satu. Jeda tiap kata
+     diberi sedikit acak supaya ritmenya tidak terasa seperti metronom — tapi
+     tetap menaik, jadi urutannya tidak pernah tertukar. Selama alirannya
+     berjalan tidak ada satu pun pekerjaan per frame: yang berubah cuma
+     opacity dan transform tiap kata, dan itu urusan kompositor. */
   function tayangTeks(teks, alir) {
     hentikanAlir();
-    el.pPenuh.textContent = teks;
-    el.pPotong.textContent = "";
-    el.pTeks.removeAttribute("data-alir");
+    el.pIsi.textContent = "";
     if (!teks) return;
-    if (!alir) {
-      el.pPotong.textContent = teks;
+    var hasil = pecahKata(teks);
+    el.pIsi.appendChild(hasil.serpih);
+    if (!alir || !hasil.kata.length) {
       el.pTeks.setAttribute("data-alir", "selesai");
       return;
     }
 
-    el.pAlir.classList.add("menunggu");
-    el.pTeks.setAttribute("data-alir", "menulis");
+    el.pTeks.setAttribute("data-alir", "menunggu");
+    var n = hasil.kata.length;
+    var lama = Math.min(LAMA_MAKS, LAMA_DASAR + n * LAMA_PER_KATA);
+    var selang = lama / n;
+    var jalan = 0;
+    for (var j = 0; j < n; j++) {
+      jalan += selang * (0.78 + Math.random() * 0.44);
+      hasil.kata[j].style.animationDelay = Math.min(jalan, lama).toFixed(1) + "ms";
+    }
+
     alirJeda = setTimeout(function () {
-      alirJeda = 0;
-      el.pAlir.classList.remove("menunggu");
-      el.pAlir.classList.add("mengalir");
-      var lama = Math.min(LAMA_MAKS, LAMA_DASAR + teks.length * LAMA_PER_HURUF);
-      var mulai = 0;
-      function gambar(waktu) {
-        if (!mulai) mulai = waktu;
-        var bagian = Math.min(1, (waktu - mulai) / lama);
-        var longgar = 1 - Math.pow(1 - bagian, 2.2);
-        el.pPotong.textContent = teks.slice(0, Math.round(teks.length * longgar));
-        if (bagian < 1) {
-          alirRaf = requestAnimationFrame(gambar);
-          return;
-        }
-        alirRaf = 0;
-        el.pAlir.classList.remove("mengalir");
+      el.pTeks.setAttribute("data-alir", "menulis");
+      alirJeda = setTimeout(function () {
+        alirJeda = 0;
         el.pTeks.setAttribute("data-alir", "selesai");
-      }
-      alirRaf = requestAnimationFrame(gambar);
+      }, lama + 400);
     }, JEDA_TULIS);
   }
 

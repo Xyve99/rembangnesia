@@ -183,12 +183,13 @@ async function etalaseGaleri(b){
  // Pratinjau dulu, sebelum ada bilah pilihan yang melayang menutupi kartu.
  // Gambarnya ditukar ke berkas penuh begitu selesai dimuat.
  await p.locator('[data-galeri] .kartu__buka').first().click(); await p.waitForTimeout(1500);
- // Keterangan yang baru pertama kali dibuka mengalir seperti sedang ditulis,
- // dan baru berhenti sekitar 1,5 detik kemudian. Semua ukuran di bawah ini
- // diambil setelah alirannya selesai, bukan di tengah jalan.
+ // Keterangan yang baru pertama kali dibuka mengalir seperti sedang ditulis:
+ // diam dulu dua detik dengan kursor berkedip, baru katanya naik satu per satu.
+ // Semua ukuran di bawah ini diambil setelah alirannya selesai, bukan di tengah
+ // jalan.
  if (await p.locator('[data-pratinjau-deskripsi]').isVisible()) {
   await p.locator('[data-pratinjau-teks][data-alir="selesai"]')
-    .waitFor({timeout:8000}).catch(()=>{});
+    .waitFor({timeout:20000}).catch(()=>{});
  }
  h.pratinjauTerbuka=await p.locator('[data-pratinjau]').evaluate(d=>d.open);
  h.pratinjauKode=await p.locator('[data-pratinjau-kode]').innerText();
