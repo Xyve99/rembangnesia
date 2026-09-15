@@ -6,6 +6,7 @@
   "scripts": {
     "serve": "python3 -m http.server 8899",
     "check": "node tools/check.js",
+    "check:profil": "TARGET=profil node tools/check.js",
     "check:live": "URL=https://xyve99.github.io/rembangnesia/ node tools/check.js",
     "banner": "node tools/banner.js",
     "banner:bg": "node tools/bg.js",

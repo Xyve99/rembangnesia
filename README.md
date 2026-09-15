@@ -25,11 +25,18 @@ Untuk sekadar melihat atau menyunting halaman, itu sudah cukup — buka
 ```bash
 npm install              # playwright
 npx playwright install chromium
-npm run check            # audit index.html lokal
-npm run check:live       # audit URL produksi
+npm run check            # audit etalase (index.html) lokal
+npm run check:profil     # audit halaman profil lokal
+npm run check:live       # audit etalase di URL produksi
 ```
 
 Hasil audit ditulis ke `out/` (di-ignore git): `rmbcheck.json` plus ratusan PNG.
+
+Ketiga perintah itu melayani halamannya lewat server statis di dalam proses
+sendiri. Jangan dibuka sebagai `file://` — Chromium menolak `fetch()` lintas
+skema, jadi `data/desain.json` tidak akan termuat dan galeri selalu tampil
+kosong. Lalu lintas audit ke server statistik juga diredam supaya angka
+pengunjung pemilik tidak tercemar.
 
 Menyunting lalu deploy:
 
