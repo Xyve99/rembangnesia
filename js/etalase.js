@@ -4,6 +4,10 @@
   var WA = "6285166410556";
   var SUMBER = "data/desain.json";
   var KUNCI = "rmbg.pilihan";
+  // Desain yang sudah pernah dibuka pengunjung ini. Keterangannya cuma
+  // "ditulis" sekali per orang per desain; sesudah itu muncul langsung.
+  var KUNCI_LIHAT = "rmbg.lihat";
+  var BATAS_LIHAT = 400;
   var BERANDA = "https://xyve99.github.io/rembangnesia/";
   var STAT = window.RMBG_STAT || "";
 
@@ -27,6 +31,9 @@
     pKode: document.querySelector("[data-pratinjau-kode]"),
     pDeskripsi: document.querySelector("[data-pratinjau-deskripsi]"),
     pTeks: document.querySelector("[data-pratinjau-teks]"),
+    pPenuh: document.querySelector("[data-pratinjau-penuh]"),
+    pAlir: document.querySelector("[data-pratinjau-alir]"),
+    pPotong: document.querySelector("[data-pratinjau-potong]"),
     pTandai: document.querySelector("[data-pratinjau-tandai]"),
     pKirim: document.querySelector("[data-pratinjau-kirim]")
   };
@@ -196,6 +203,93 @@
     return pilihan.map(cari).filter(Boolean);
   }
 
+  var pernahLihat = [];
+  try {
+    var tersimpan = JSON.parse(localStorage.getItem(KUNCI_LIHAT));
+    if (tersimpan && tersimpan.length) pernahLihat = tersimpan;
+  } catch (_) {
+    // Penyimpanan bisa ditolak (mode privat, data situs diblokir). Daftarnya
+    // tetap jalan di memori, jadi dalam satu kunjungan tidak ada aliran yang
+    // terputar dua kali — cuma tidak diingat sampai kunjungan berikutnya.
+    pernahLihat = [];
+  }
+
+  function sudahLihat(kode) {
+    return pernahLihat.indexOf(kode) !== -1;
+  }
+
+  function tandaiLihat(kode) {
+    if (sudahLihat(kode)) return;
+    pernahLihat.push(kode);
+    if (pernahLihat.length > BATAS_LIHAT) {
+      pernahLihat = pernahLihat.slice(pernahLihat.length - BATAS_LIHAT);
+    }
+    try {
+      localStorage.setItem(KUNCI_LIHAT, JSON.stringify(pernahLihat));
+    } catch (_) {}
+  }
+
+  function bolehGerak() {
+    return !(window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+
+  var JEDA_TULIS = 430;    // ms diam dulu, seperti sedang menyusun kalimat
+  var LAMA_DASAR = 380;
+  var LAMA_PER_HURUF = 0.75;
+  var LAMA_MAKS = 1500;
+  var alirRaf = 0;
+  var alirJeda = 0;
+
+  function hentikanAlir() {
+    if (alirRaf) { cancelAnimationFrame(alirRaf); alirRaf = 0; }
+    if (alirJeda) { clearTimeout(alirJeda); alirJeda = 0; }
+    el.pAlir.classList.remove("menunggu", "mengalir");
+  }
+
+  /* Teks penuhnya dipasang di lapis ukur yang tak terlihat, jadi tingginya
+     sudah final sebelum satu huruf pun muncul. Lapis alir yang diisi bertahap:
+     mula-mula diam dengan kursor berkedip, lalu hurufnya menyusul dengan
+     kecepatan yang melambat di ujung — bukan ketukan mesin tik yang rata, dan
+     bukan kilau yang menyapu teks. Kursor berhenti berkedip begitu menulis
+     dimulai, lalu tinggal samar sebelum hilang. */
+  function tayangTeks(teks, alir) {
+    hentikanAlir();
+    el.pPenuh.textContent = teks;
+    el.pPotong.textContent = "";
+    el.pTeks.removeAttribute("data-alir");
+    if (!teks) return;
+    if (!alir) {
+      el.pPotong.textContent = teks;
+      el.pTeks.setAttribute("data-alir", "selesai");
+      return;
+    }
+
+    el.pAlir.classList.add("menunggu");
+    el.pTeks.setAttribute("data-alir", "menulis");
+    alirJeda = setTimeout(function () {
+      alirJeda = 0;
+      el.pAlir.classList.remove("menunggu");
+      el.pAlir.classList.add("mengalir");
+      var lama = Math.min(LAMA_MAKS, LAMA_DASAR + teks.length * LAMA_PER_HURUF);
+      var mulai = 0;
+      function gambar(waktu) {
+        if (!mulai) mulai = waktu;
+        var bagian = Math.min(1, (waktu - mulai) / lama);
+        var longgar = 1 - Math.pow(1 - bagian, 2.2);
+        el.pPotong.textContent = teks.slice(0, Math.round(teks.length * longgar));
+        if (bagian < 1) {
+          alirRaf = requestAnimationFrame(gambar);
+          return;
+        }
+        alirRaf = 0;
+        el.pAlir.classList.remove("mengalir");
+        el.pTeks.setAttribute("data-alir", "selesai");
+      }
+      alirRaf = requestAnimationFrame(gambar);
+    }, JEDA_TULIS);
+  }
+
   function pesan(daftar) {
     var baris = daftar.map(function (d, i) {
       return (i + 1) + ". " + d.kode;
@@ -337,8 +431,10 @@
     // sebagai markup. Baris baru dan tanda "-" tetap tampil utuh karena
     // .pratinjau__teks memakai white-space:pre-line.
     var teks = (d.deskripsi || "").trim();
-    el.pTeks.textContent = teks;
     el.pDeskripsi.hidden = !teks;
+    var segar = !!teks && bolehGerak() && !sudahLihat(d.kode);
+    tayangTeks(teks, segar);
+    if (segar) tandaiLihat(d.kode);
     setZoom(false);
     if (!el.pratinjau.open) el.pratinjau.showModal();
     el.pratinjau.focus();
@@ -397,6 +493,7 @@
     });
 
     el.pratinjau.addEventListener("close", function () {
+      hentikanAlir();
       setZoom(false);
       siapGulirDeskripsi();
     });

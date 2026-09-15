@@ -178,6 +178,19 @@ atributnya alih-alih memasangnya sekali. Diukur setelah `showModal()`, sebab
 selama tertutup `display`-nya `none` dan `scrollHeight` sama dengan
 `clientHeight`.
 
+Kunjungan pertama ke sebuah desain memutar ilusi keterangannya baru saja
+ditulis: diam sejenak dengan kursor berkedip, lalu hurufnya menyusul dengan
+kecepatan yang melambat di ujung. Sekali per orang per desain — daftarnya
+disimpan di `localStorage` (`rmbg.lihat`) dan yang sudah pernah dibuka muncul
+langsung. Yang membuatnya tidak menggeser tata letak: dua lapis ditumpuk di
+satu sel grid (`.pratinjau__ukur` yang tak terlihat berisi teks penuh,
+`.pratinjau__alir` yang isinya bertambah). Keduanya selebar sama dan berisi teks
+yang sama, jadi patahan barisnya identik dan tinggi bloknya sudah final sejak
+huruf pertama. Kursor di kedua lapis sengaja tetap punya kotak walau tak
+terlihat: kalau kotaknya hilang saat aliran selesai, patahan barisnya bergeser
+satu kata di detik terakhir. Suite menunggu `[data-alir="selesai"]` sebelum
+mengukur apa pun di dalam dialog.
+
 ## Utang yang diketahui
 
 Bilah pilihan melayang (`.pilihan`) berdiri di luar landmark mana pun, jadi axe
