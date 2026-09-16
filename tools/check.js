@@ -141,15 +141,26 @@ async function jalankanAxe(p){
 
 // ---------- interaksi: etalase ----------
 
+// Layar selamat datang menutupi seluruh halaman, jadi klik apa pun akan
+// menunggu ia pergi. Singkirkan lebih dulu.
+//
+// Ia juga menutup sendiri setelah lima detik (js/selamat-datang.js). Kalau
+// suite belum sempat menekan tombolnya, tombolnya sudah ikut hilang dan klik
+// biasa akan menunggu sampai batas waktunya habis — bukan karena ada yang
+// rusak, cuma karena layarnya keburu pergi. Jadi kliknya diberi batas pendek;
+// hasilnya tetap diperiksa setelahnya di kedua fungsi pemanggilnya.
+async function singkirkanSambutan(p){
+ await p.locator('[data-masuk]').click({timeout:2500}).catch(()=>{});
+ await p.locator('[data-selamat-datang]').waitFor({state:'hidden',timeout:8000}).catch(()=>{});
+}
+
 async function etalaseGaleri(b){
  const ctx=await b.newContext({viewport:{width:1440,height:900},locale:'id-ID'});
  const p=await ctx.newPage(); await janganCatatStatistik(p); await buka(p,F);
  const h={};
 
- // Layar selamat datang menutupi seluruh halaman, jadi klik apa pun akan
- // menunggu ia pergi. Singkirkan lebih dulu.
  h.selamatDatangTampil=await p.locator('[data-selamat-datang]').isVisible();
- await p.locator('[data-masuk]').click(); await p.waitForTimeout(700);
+ await singkirkanSambutan(p); await p.waitForTimeout(700);
  h.selamatDatangHilang=!(await p.locator('[data-selamat-datang]').isVisible());
  h.overflowDikembalikan=await p.evaluate(()=>document.body.style.overflow);
 
@@ -206,6 +217,26 @@ async function etalaseGaleri(b){
  await p.keyboard.press('Escape'); await p.waitForTimeout(600);
  h.pratinjauTertutup=await p.locator('[data-pratinjau]').evaluate(d=>d.open);
 
+ // Buka ulang desain yang sama: sandiwara menulisnya tidak diputar lagi, tapi
+ // bloknya tetap harus masuk dengan gerakan sendiri — bukan muncul begitu saja.
+ // Restart-nya bergantung pada satu kali baca tata letak di tayangTeks(), dan
+ // kalau itu dilepas animasinya diam-diam cuma jalan sekali.
+ await p.locator('[data-galeri] .kartu__buka').first().click();
+ await p.waitForTimeout(80);
+ h.bukaUlangTahap=await p.locator('[data-pratinjau-teks]').getAttribute('data-alir');
+ h.bukaUlangAnimasi=await p.locator('[data-pratinjau-teks]').evaluate(e=>
+  e.getAnimations().map(a=>a.animationName));
+ await p.waitForTimeout(1200);
+ h.bukaUlangSelesai=await p.locator('[data-pratinjau-teks]').getAttribute('data-alir');
+ // Dibuka lagi untuk ketiga kalinya: animasinya harus benar-benar diputar dari
+ // awal, bukan cuma sisa dari yang sebelumnya.
+ await p.keyboard.press('Escape'); await p.waitForTimeout(600);
+ await p.locator('[data-galeri] .kartu__buka').first().click();
+ await p.waitForTimeout(80);
+ h.bukaUlang3Animasi=await p.locator('[data-pratinjau-teks]').evaluate(e=>
+  e.getAnimations().map(a=>a.animationName));
+ await p.keyboard.press('Escape'); await p.waitForTimeout(600);
+
  // Menandai dua desain harus menghasilkan satu tautan WhatsApp berisi keduanya.
  await p.locator('[data-galeri] .kartu [data-tandai]').nth(0).click();
  await p.locator('[data-galeri] .kartu [data-tandai]').nth(1).click();
@@ -248,7 +279,7 @@ async function etalaseSempit(b){
  const p=await ctx.newPage(); await janganCatatStatistik(p); await buka(p,F);
  const h={};
  h.selamatDatangTampil=await p.locator('[data-selamat-datang]').isVisible();
- await p.locator('[data-masuk]').click(); await p.waitForTimeout(700);
+ await singkirkanSambutan(p); await p.waitForTimeout(700);
  await p.locator('[data-galeri] .kartu [data-tandai]').nth(0).click(); await p.waitForTimeout(600);
  h.barTampil=await p.locator('[data-pilihan]').getAttribute('data-tampil');
  h.bilah=await p.locator('[data-pilihan]').boundingBox();

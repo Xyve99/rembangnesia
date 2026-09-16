@@ -198,6 +198,21 @@ jadi ia punya kotak untuk digambar tapi tidak menggeser kata pertama sedikit
 pun. Suite menunggu `[data-alir="selesai"]` sebelum mengukur apa pun di dalam
 dialog — jangan dihapus, ukuran di tengah aliran bukan ukuran akhir.
 
+Membuka desain yang sama untuk kedua kalinya tidak memutar sandiwaranya lagi,
+tapi juga tidak muncul begitu saja: bloknya masuk sebentar (`data-alir="singkat"`)
+— labelnya dulu, teksnya menyusul 80 ms, memakai `muncul` yang sama dengan
+kartu galeri. Sengaja bukan aliran kata lagi: aliran kata baru terbaca sebagai
+tulisan kalau jalannya lambat, dan begitu dipercepat jadi sapuan pudar. Karena
+dialognya sendiri juga sedang masuk selama ~360 ms, teksnya mendarat tepat
+sesudahnya — berurutan, bukan dua gerakan yang saling berebut.
+
+Animasi yang dipasang ulang dengan nilai atribut yang sama tidak diputar lagi
+oleh peramban: `hentikanAlir()` melepas atributnya dan `tayangTeks()` memasangnya
+kembali dalam satu tarikan napas, jadi tanpa satu kali baca tata letak
+(`void el.pTeks.offsetWidth`) di antaranya, animasinya cuma jalan sekali lalu
+diam selamanya. Suite memeriksa buka-ulang sampai ketiga kali justru karena
+jebakan ini tidak kelihatan pada buka-ulang yang pertama.
+
 Satu catatan yang belum ditindak: seluruh biaya frame saat dialog terbuka
 datang dari `backdrop-filter` di `.pratinjau[open]::backdrop`, bukan dari
 animasinya. Diukur tanpa akselerasi perangkat keras, dialog yang terbuka dan

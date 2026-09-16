@@ -385,7 +385,9 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .pratinjau::backdrop{transition:none}
   .pratinjau{transform:none}
   .pratinjau__kata,
-  .pratinjau__kursor{animation:none}
+  .pratinjau__kursor,
+  .pratinjau__teks[data-alir="singkat"],
+  .pratinjau__deskripsi:has([data-alir="singkat"]) .pratinjau__ai{animation:none}
 }
 .pratinjau__gambar{position:relative; background:var(--bg); overflow:hidden}
 .pratinjau__gambar img{
@@ -496,6 +498,19 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 .pratinjau__teks[data-alir="menulis"] .pratinjau__kursor{animation:pudar .3s ease-out both}
 @keyframes kedip{0%,45%{opacity:1}50%,100%{opacity:0}}
 @keyframes pudar{from{opacity:1}to{opacity:0}}
+/* Buka ulang tidak lagi memutar sandiwara menulisnya — itu cuma sekali per
+   orang per desain. Kali ini bloknya yang masuk sebentar: labelnya dulu,
+   teksnya menyusul sepersekian detik, memakai gerakan yang sama dengan kartu
+   galeri. Sengaja bukan aliran kata lagi: aliran kata baru terbaca sebagai
+   tulisan kalau jalannya lambat, dan kalau dipercepat jadi sapuan pudar yang
+   justru itulah yang mau dihindari.
+   Hanya opacity dan transform, jadi tidak ada ongkos tata letak. */
+.pratinjau__deskripsi:has([data-alir="singkat"]) .pratinjau__ai{
+  animation:muncul .3s var(--kurva) both;
+}
+.pratinjau__teks[data-alir="singkat"]{
+  animation:muncul .34s var(--kurva) .08s both;
+}
 /* Ada keterangan berarti ada satu blok lagi yang harus muat. Gambarnya yang
    dikorbankan, bukan keterangannya. */
 .pratinjau:has([data-pratinjau-deskripsi]:not([hidden])) .pratinjau__gambar img{

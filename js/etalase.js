@@ -236,6 +236,7 @@
   var LAMA_DASAR = 800;
   var LAMA_PER_KATA = 16;
   var LAMA_MAKS = 3600;
+  var SINGKAT_LAMA = 480;  // label .3s, teksnya .34s menyusul .08s
   var alirJeda = 0;
 
   function hentikanAlir() {
@@ -272,14 +273,34 @@
      tetap menaik, jadi urutannya tidak pernah tertukar. Selama alirannya
      berjalan tidak ada satu pun pekerjaan per frame: yang berubah cuma
      opacity dan transform tiap kata, dan itu urusan kompositor. */
-  function tayangTeks(teks, alir) {
+  /* mode: "" teksnya muncul langsung, "penuh" sandiwara lengkap, "singkat"
+     cuma bloknya yang masuk sebentar. */
+  function tayangTeks(teks, mode) {
     hentikanAlir();
     el.pIsi.textContent = "";
     if (!teks) return;
     var hasil = pecahKata(teks);
     el.pIsi.appendChild(hasil.serpih);
-    if (!alir || !hasil.kata.length) {
+    if (!mode || !hasil.kata.length) {
       el.pTeks.setAttribute("data-alir", "selesai");
+      return;
+    }
+
+    if (mode === "singkat") {
+      // hentikanAlir() sudah melepas atributnya, tapi kalau nilainya kebetulan
+      // sama dengan sebelumnya peramban tidak melihat perubahan apa pun dan
+      // animasinya tidak diputar lagi. Satu kali baca tata letak memaksa
+      // keadaannya benar-benar kembali dulu.
+      void el.pTeks.offsetWidth;
+      el.pTeks.setAttribute("data-alir", "singkat");
+      // "selesai" dipakai suite untuk tahu kapan semuanya berhenti bergerak,
+      // jadi keadaannya harus kembali ke situ di mode ini juga. Animasi yang
+      // dilepas di akhir tidak melompat: keadaan dasarnya sama dengan
+      // keadaan akhirnya.
+      alirJeda = setTimeout(function () {
+        alirJeda = 0;
+        el.pTeks.setAttribute("data-alir", "selesai");
+      }, SINGKAT_LAMA);
       return;
     }
 
@@ -444,9 +465,14 @@
     // .pratinjau__teks memakai white-space:pre-line.
     var teks = (d.deskripsi || "").trim();
     el.pDeskripsi.hidden = !teks;
-    var segar = !!teks && bolehGerak() && !sudahLihat(d.kode);
-    tayangTeks(teks, segar);
-    if (segar) tandaiLihat(d.kode);
+    // Kunjungan pertama ke desain ini memutar sandiwara "baru saja ditulis".
+    // Sesudahnya tidak diulang — tapi juga tidak muncul begitu saja: bloknya
+    // tetap masuk sebentar. Pengunjung yang minta gerak dikurangi dapat
+    // teksnya langsung tanpa keduanya.
+    var mode = "";
+    if (teks && bolehGerak()) mode = sudahLihat(d.kode) ? "singkat" : "penuh";
+    tayangTeks(teks, mode);
+    if (mode === "penuh") tandaiLihat(d.kode);
     setZoom(false);
     if (!el.pratinjau.open) el.pratinjau.showModal();
     el.pratinjau.focus();
