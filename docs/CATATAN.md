@@ -228,6 +228,51 @@ sama sekali tidak beranimasi pun jatuh ke ~9 fps, dan menghapus
 tetap beranimasi. Artinya kabut di belakang dialog itu yang mahal, bukan
 teksnya.
 
+## Skeleton saat gambar dimuat
+
+Gambar galeri dan gambar pratinjau sama-sama punya keadaan "sedang dimuat":
+bidang isian dengan satu sapuan terang yang bergerak (`--kilau-muat`,
+`@keyframes kilau`), lalu memudar begitu gambarnya siap. Sebelumnya yang
+terlihat cuma bidang putih — di kartu, putihnya `.kartu`; di dialog, `--bg`.
+Kartu galeri sebenarnya sudah punya CSS-nya sejak lama, tapi tidak pernah
+menyala: `muatGambar()` membaca `data-lambat` sebagai nilai lalu menolak yang
+kosong, sedangkan atribut itu cuma penanda tanpa isi. Jadi fungsinya selalu
+keluar di baris pertama. Penjaganya sekarang `hasAttribute`.
+
+Sapuannya duduk di `::after` pembungkusnya, bukan di latar `<img>`-nya.
+`opacity:0` berlaku untuk seluruh elemen termasuk latarnya sendiri, jadi versi
+pertama — yang menyetel `opacity:0` **dan** `background` pada gambar yang sama
+— tidak mungkin terlihat sekalipun keadaannya menyala. Yang perlu disembunyikan
+cuma isi gambarnya, dan itu sudah otomatis sebelum gambarnya terdekode; yang
+perlu dikendalikan opacity-nya adalah lapisan skeletonnya.
+
+Skeletonnya tidak muncul seketika, tapi setelah `--jeda-muat` (.2 dtk).
+Gambar dari cache peramban pun masih memakan puluhan milidetik antara `src`
+dipasang dan `load` menyala, dan skeleton yang muncul-muncul dalam rentang itu
+cuma terbaca sebagai kedipan. Yang lebih cepat dari jeda itu tidak pernah
+memunculkannya sama sekali.
+
+Dua jebakan yang membuat jeda itu tidak berlaku di dialog:
+
+- Dialog yang baru dibuka dirender untuk pertama kali, dan perubahan gaya yang
+  pertama tidak pernah memicu transisi. Tanpa `@starting-style`, lapisan itu
+  melompat langsung ke `opacity:1` lalu memudar — persis kedipan yang mau
+  dihindari. Blok `@starting-style`-nya harus berada **setelah** aturan
+  kilaunya: spesifisitasnya sama persis, jadi yang menang adalah yang
+  belakangan di sumber. Ini jebakan kaskade yang sama dengan `.banner__scrim`
+  di atas, dan yang keempat kali menggigit.
+- Versi resolusi penuh yang menyusul belakangan sengaja **tidak** mengembalikan
+  keadaannya ke "0". Versi kecilnya sudah terlihat; skeleton di atas gambar
+  yang sudah ada cuma berkedip tanpa guna.
+
+Diukur lewat pelacakan per frame: membuka dialog untuk gambar yang sudah ada di
+cache memberi opacity puncak 0.000 — tidak ada lapisan yang pernah terlihat,
+baik pada pembukaan pertama maupun buka-ulang. Untuk gambar yang benar-benar
+lambat, skeletonnya muncul di kartu maupun di dialog, lalu hilang sendiri
+begitu gambarnya tiba. Pengunjung dengan `prefers-reduced-motion` tetap
+mendapat jeda dan bidangnya, tapi tanpa kilau dan tanpa pudar — jadi tidak ada
+gerakan, dan tetap bukan putih kosong.
+
 ## Utang yang diketahui
 
 Bilah pilihan melayang (`.pilihan`) berdiri di luar landmark mana pun, jadi axe

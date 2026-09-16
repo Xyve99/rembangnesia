@@ -120,8 +120,11 @@
   }
 
   function muatGambar(img) {
-    var src = img.getAttribute("data-lambat");
-    if (!src) return;
+    // data-lambat itu penanda kosong — yang penting ada atau tidak, bukan
+    // isinya. Membaca nilainya lalu menolak yang kosong membuat fungsi ini
+    // selalu keluar di baris pertama, dan seluruh keadaan "sedang dimuat"
+    // tidak pernah menyala.
+    if (!img.hasAttribute("data-lambat")) return;
     img.removeAttribute("data-lambat");
     if (img.complete && img.naturalWidth > 0) { img.dataset.muat = "1"; return; }
     img.dataset.muat = "0";
@@ -457,6 +460,11 @@
     el.pGambar.height = u.h;
     el.pGambar.alt = alt(d);
     el.pGambar.src = "img/desain/galeri/" + d.kode + ".webp";
+    // Gambar yang sudah ada di cache selesai seketika; tanpa cek ini skeletonnya
+    // berkedip sekali setiap kali dialog dibuka. Pendengar load/error-nya
+    // dipasang sekali di pasang(), bukan di sini.
+    el.pGambar.dataset.muat =
+      el.pGambar.complete && el.pGambar.naturalWidth > 0 ? "1" : "0";
     el.pTandai.innerHTML = tombol(d.kode);
     el.pKirim.href = tautan([d]);
     // Keterangan ditulis lewat textContent, bukan innerHTML: teksnya datang
@@ -500,6 +508,14 @@
     });
 
     var digeser = pasangGeser();
+
+    // Pratinjau memakai keadaan "sedang dimuat" yang sama dengan kartu galeri.
+    // Dipasang sekali di sini, bukan tiap kali dibuka, supaya tidak menumpuk
+    // pendengar. Versi resolusi penuh yang menyusul belakangan sengaja tidak
+    // mengembalikannya ke "0": versi kecilnya sudah terlihat, dan skeleton di
+    // atas gambar yang sudah ada cuma berkedip tanpa guna.
+    el.pGambar.addEventListener("load", function () { el.pGambar.dataset.muat = "1"; });
+    el.pGambar.addEventListener("error", function () { el.pGambar.dataset.muat = "error"; });
 
     el.pratinjau.addEventListener("click", function (e) {
       if (e.target === el.pratinjau) {
