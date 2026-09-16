@@ -273,6 +273,43 @@ begitu gambarnya tiba. Pengunjung dengan `prefers-reduced-motion` tetap
 mendapat jeda dan bidangnya, tapi tanpa kilau dan tanpa pudar — jadi tidak ada
 gerakan, dan tetap bukan putih kosong.
 
+## Lokasi pengunjung
+
+Halaman meminta izin lokasi begitu dibuka (`js/lokasi.js`), tanpa banner atau
+teks penjelasan lebih dulu, lalu mengirim koordinatnya ke server statistik lewat
+`POST /lokasi`. Satu kali per sesi tab, sama seperti `catatKunjungan()` di
+`statistik.js`. Server meneruskannya ke Telegram pemilik etalase, dengan tautan
+peta, supaya CS bisa langsung menyebut estimasi ongkir waktu ada yang bertanya.
+
+**Ini data pribadi, dan diperlakukan begitu.** Koordinat presisi adalah titik
+tempat orang berada — lebih sensitif daripada apa pun yang sudah dicatat
+etalase ini. Karena itu:
+
+- Izinnya dari peramban, jadi pengunjung bisa menolak, dan penolakan itu
+  dihormati: yang tersimpan hanya perkiraan tingkat kota dari IP.
+- `lokasi.json` tinggal di `bot/`, yang gitignored — tidak pernah ikut ke repo
+  publik, dan pesannya hanya ke `ADMIN_ID`, bukan ke grup.
+- Sepuluh kunjungan terakhir bisa dibaca CS lewat `/lokasi`; jumlah barisnya
+  dibatasi `BATAS_BARIS` seperti `klik.json` dan `lihat.json`.
+- Satu IP hanya ditelegramkan sekali per `JEDA_LOKASI` (30 menit). Orang yang
+  membuka etalase berkali-kali adalah satu calon pembeli, bukan lima, dan CS
+  tidak perlu dibangunkan lima kali untuk itu.
+
+Tanpa banner ada satu akibat yang perlu diketahui: **Safari dan Firefox
+menolak permintaan lokasi yang tidak didahului sentuhan pengunjung.** Di dua
+peramban itu permintaannya gagal tanpa suara. Chrome meminta, tapi bisa
+menampilkannya dalam bentuk yang lebih kecil dan mengabaikannya kalau halaman
+tidak disentuh. Karena itu POST-nya tetap dikirim walaupun koordinatnya tidak
+didapat, dan server memakai kota dari IP sebagai gantinya. Bedanya ditandai
+tegas di pesan Telegramnya: yang dari IP dibubuhi peringatan supaya tidak
+dipakai menghitung ongkir sebagai alamat.
+
+Kota dari IP itu datang dari `request.cf` di Worker, bukan dari halaman —
+header `X-Cf-*` diisi Worker dan hanya dipercaya kalau `X-Origin-Key` cocok,
+jadi pengunjung tidak bisa mengaku-aku berada di mana. Nilainya di-URL-encode
+karena nama kota bisa mengandung huruf non-ASCII sedangkan header HTTP harus
+latin-1.
+
 ## Utang yang diketahui
 
 Bilah pilihan melayang (`.pilihan`) berdiri di luar landmark mana pun, jadi axe
