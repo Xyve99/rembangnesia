@@ -200,11 +200,18 @@ dialog — jangan dihapus, ukuran di tengah aliran bukan ukuran akhir.
 
 Membuka desain yang sama untuk kedua kalinya tidak memutar sandiwaranya lagi,
 tapi juga tidak muncul begitu saja: bloknya masuk sebentar (`data-alir="singkat"`)
-— labelnya dulu, teksnya menyusul 80 ms, memakai `muncul` yang sama dengan
-kartu galeri. Sengaja bukan aliran kata lagi: aliran kata baru terbaca sebagai
-tulisan kalau jalannya lambat, dan begitu dipercepat jadi sapuan pudar. Karena
-dialognya sendiri juga sedang masuk selama ~360 ms, teksnya mendarat tepat
-sesudahnya — berurutan, bukan dua gerakan yang saling berebut.
+— labelnya dulu (.55 dtk), teksnya menyusul .14 dtk kemudian (.65 dtk), jadi
+seluruhnya sekitar .83 dtk. Sengaja bukan aliran kata lagi: aliran kata baru
+terbaca sebagai tulisan kalau jalannya lambat, dan begitu dipercepat jadi
+sapuan pudar.
+
+Gerakannya sengaja tidak memakai `muncul` yang dipakai kartu galeri. Durasinya
+memang beda, tapi alasan utamanya lengkungnya: `--kurva` menaruh dua pertiga
+gerakan di 20% waktu pertama, pas untuk kartu yang datang beramai-ramai dan
+harus gesit, tapi terbaca sebagai "nemplok" untuk satu blok yang memang mau
+dibaca. Di sini lengkungnya lebih rata dan jarak naiknya 14px, bukan 10px.
+Memperlambat durasinya saja tidak cukup — yang bikin terasa cepat itu
+lengkungnya.
 
 Animasi yang dipasang ulang dengan nilai atribut yang sama tidak diputar lagi
 oleh peramban: `hentikanAlir()` melepas atributnya dan `tayangTeks()` memasangnya

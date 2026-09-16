@@ -236,7 +236,7 @@
   var LAMA_DASAR = 800;
   var LAMA_PER_KATA = 16;
   var LAMA_MAKS = 3600;
-  var SINGKAT_LAMA = 480;  // label .3s, teksnya .34s menyusul .08s
+  var SINGKAT_LAMA = 850;  // label .55s, teksnya .65s menyusul .14s
   var alirJeda = 0;
 
   function hentikanAlir() {

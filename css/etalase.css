@@ -500,16 +500,25 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 @keyframes pudar{from{opacity:1}to{opacity:0}}
 /* Buka ulang tidak lagi memutar sandiwara menulisnya — itu cuma sekali per
    orang per desain. Kali ini bloknya yang masuk sebentar: labelnya dulu,
-   teksnya menyusul sepersekian detik, memakai gerakan yang sama dengan kartu
-   galeri. Sengaja bukan aliran kata lagi: aliran kata baru terbaca sebagai
-   tulisan kalau jalannya lambat, dan kalau dipercepat jadi sapuan pudar yang
-   justru itulah yang mau dihindari.
-   Hanya opacity dan transform, jadi tidak ada ongkos tata letak. */
+   teksnya menyusul, memakai gerakan yang sama dengan kartu galeri. Sengaja
+   bukan aliran kata lagi: aliran kata baru terbaca sebagai tulisan kalau
+   jalannya lambat, dan kalau dipercepat jadi sapuan pudar yang justru itulah
+   yang mau dihindari.
+   Hanya opacity dan transform, jadi tidak ada ongkos tata letak.
+   Dipisah dari `muncul` bukan cuma karena durasinya beda. `muncul` memakai
+   --kurva, yang menaruh dua pertiga gerakannya di 20% waktu pertama — pas
+   untuk kartu galeri yang datang beramai-ramai dan harus gesit, tapi terbaca
+   sebagai "nemplok" untuk satu blok yang memang mau dibaca. Di sini lengkungnya
+   dibuat lebih rata, dan jarak naiknya ditambah, supaya gerakannya sempat
+   terlihat alih-alih cuma terasa sebagai kedipan. */
+@keyframes masuk-keterangan{
+  from{opacity:0; transform:translateY(14px)}
+}
 .pratinjau__deskripsi:has([data-alir="singkat"]) .pratinjau__ai{
-  animation:muncul .3s var(--kurva) both;
+  animation:masuk-keterangan .55s cubic-bezier(.4,0,.2,1) both;
 }
 .pratinjau__teks[data-alir="singkat"]{
-  animation:muncul .34s var(--kurva) .08s both;
+  animation:masuk-keterangan .65s cubic-bezier(.4,0,.2,1) .14s both;
 }
 /* Ada keterangan berarti ada satu blok lagi yang harus muat. Gambarnya yang
    dikorbankan, bukan keterangannya. */
