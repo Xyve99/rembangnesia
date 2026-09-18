@@ -1,6 +1,12 @@
 {
-  "diperbarui": "2026-09-16",
+  "diperbarui": "2026-09-18",
   "desain": [
+    {
+      "kode": "RMBG-5921",
+      "lebar": 1919,
+      "tinggi": 1245,
+      "ditambah": "2026-09-18"
+    },
     {
       "kode": "RMBG-9884",
       "lebar": 1919,
