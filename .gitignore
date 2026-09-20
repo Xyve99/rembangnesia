@@ -7,3 +7,7 @@ masuk/
 bahan baru/
 .claude/
 bot/
+.env
+.env.*
+.env-*
+*.cred
