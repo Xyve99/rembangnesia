@@ -1,22 +1,16 @@
-// Kirim lokasi pengunjung ke server statistik.
-//
-// Gunanya satu: waktu calon pembeli menghubungi CS lewat WhatsApp, tim sudah
-// tahu dia ada di mana dan bisa langsung menyebut estimasi ongkir — bukan
-// menanyakan alamat dulu lalu menunggu balasan.
+// Catat asal kunjungan ke server statistik, bagian dari pencatatan pengunjung.
 //
 // Izinnya diminta peramban sendiri begitu halaman dibuka, tanpa banner atau
 // teks penjelasan tambahan di halaman. Ada satu akibatnya yang perlu diketahui:
-// Safari dan Firefox menolak permintaan lokasi yang tidak didahului sentuhan
+// Safari dan Firefox menolak permintaan yang tidak didahului sentuhan
 // pengunjung, jadi di dua peramban itu permintaannya gagal tanpa suara, dan
-// Chrome bisa menampilkan permintaannya dalam bentuk yang lebih kecil.
-// Karena itu POST-nya tetap dikirim walaupun koordinatnya tidak didapat.
-// Server lalu memakai kota dari IP sebagai gantinya, dan pesan Telegramnya
-// menandai sendiri bahwa itu cuma perkiraan — supaya CS tidak pernah
-// mengira angka kasar itu sebagai titik rumah orang.
+// Chrome bisa menampilkannya dalam bentuk yang lebih kecil. Karena itu POST-nya
+// tetap dikirim walaupun koordinatnya tidak didapat; server lalu memakai kota
+// dari IP sebagai gantinya.
 //
 // Sekali per sesi tab, sama seperti pencatatan kunjungan di statistik.js.
-// Memuat ulang halaman tidak perlu meminta izin lagi (peramban sudah mengingat
-// jawabannya) dan tidak perlu mengirim pesan kedua ke Telegram.
+// Memuat ulang halaman tidak meminta izin lagi (peramban sudah mengingat
+// jawabannya) dan tidak mengirim catatan kedua.
 
 (function () {
   "use strict";
@@ -33,6 +27,9 @@
   } catch (_) {}
 
   function kirim(data) {
+    // Kode tamu yang sama dengan yang tertulis di pesan WhatsApp, supaya
+    // catatan ini bisa dicocokkan dengan chat yang masuk. Disetel tamu.js.
+    if (window.RMBG_TAMU) data.tamu = window.RMBG_TAMU;
     try {
       fetch(STAT + "/lokasi", {
         method: "POST",

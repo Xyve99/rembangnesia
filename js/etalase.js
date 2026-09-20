@@ -330,7 +330,11 @@
     var baris = daftar.map(function (d, i) {
       return (i + 1) + ". " + d.kode;
     });
-    return "Halo kak, saya tertarik dengan desain ini:\n\n" + baris.join("\n");
+    var teks = "Halo kak, saya tertarik dengan desain ini:\n\n" + baris.join("\n");
+    // Kode tamu diselipkan di ekor pesan supaya tim bisa mengenali percakapan
+    // ini. Disetel tamu.js; kalau entah kenapa belum ada, pesannya tetap jalan.
+    if (window.RMBG_TAMU) teks += "\n\nKode: " + window.RMBG_TAMU;
+    return teks;
   }
 
   function tautan(daftar) {
