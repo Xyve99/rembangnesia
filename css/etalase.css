@@ -5,16 +5,11 @@
   --kartu:#FFFFFF;
   --isian:rgba(118,118,128,.12);
   --isian-2:rgba(118,118,128,.2);
-  /* Latar skeleton "sedang dimuat": bidang isian dengan satu sapuan terang.
-     Dipakai tiga tempat (kartu galeri, gambar pratinjau, petak statistik yang
-     belum terisi), jadi sapuannya satu definisi. */
+
   --kilau-muat:
     linear-gradient(100deg, transparent 32%, rgba(255,255,255,.7) 50%, transparent 68%) no-repeat,
     var(--isian);
-  /* Jeda sebelum skeleton muncul. Gambar yang datang lebih cepat dari ini tidak
-     pernah memunculkannya: tanpa jeda, gambar dari cache peramban masih memakan
-     puluhan milidetik antara src dipasang dan load menyala, dan yang terlihat
-     cuma kedipan abu-abu. */
+
   --jeda-muat:.2s;
   --label:#1C1C1E;
   --label-2:#64646A;
@@ -218,12 +213,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   width:100%; height:auto;
   transition:transform .5s var(--kurva);
 }
-/* Selama gambarnya belum terdekode, kartu ini cuma bidang putih kosong.
-   Lapisan inilah yang mengisinya: kilau abu-abu yang bergerak, lalu memudar
-   begitu gambarnya siap. Ia dipasang di pembungkusnya, bukan di <img>-nya,
-   sebab latar sebuah <img> ikut hilang bersama opacity-nya — versi pertama
-   dulu menyetel opacity:0 pada gambarnya sendiri, jadi kilaunya tidak pernah
-   terlihat sekalipun keadaannya menyala. */
+
 .kartu__buka::after{
   content:""; position:absolute; inset:0; pointer-events:none;
   opacity:0; transition:opacity .45s ease;
@@ -248,10 +238,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .kartu,
   .kartu__buka,
   .kartu__buka img{transition:none}
-  /* Jeda skeletonnya tetap ada; yang dihilangkan cuma pudarnya. Penimpaannya
-     harus menyebut pemilih :has() juga — spesifisitasnya lebih tinggi daripada
-     .kartu__buka::after, jadi aturan yang lebih rendah tidak akan menang di
-     sini sekalipun datang belakangan. */
+
   .kartu__buka::after,
   .kartu__buka:has(img[data-muat="0"])::after{transition:opacity 0s linear var(--jeda-muat)}
   .kartu__buka:has(img[data-muat="0"])::after{animation:none}
@@ -428,11 +415,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   width:240%; max-width:240%; max-height:none;
   cursor:zoom-out;
 }
-/* Keadaan "sedang dimuat" yang sama dengan kartu galeri, tapi di sini yang
-   kosong bukan cuma satu kartu: seluruh kotak gambar setinggi ratusan piksel
-   berubah jadi bidang rata. Karena itu skeletonnya perlu. Aturannya sengaja
-   duduk di sini, bukan di bagian kartu di atas, supaya penimpaan
-   prefers-reduced-motion-nya berada setelahnya di dalam sumber. */
+
 .pratinjau__gambar::after{
   content:""; position:absolute; inset:0; pointer-events:none;
   opacity:0; transition:opacity .45s ease;
@@ -445,14 +428,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   animation:kilau 1.4s ease-in-out infinite;
 }
 .pratinjau__gambar:has(img[data-muat="error"])::after{display:none}
-/* Dialog yang baru dibuka dirender untuk pertama kali, dan perubahan gaya yang
-   pertama tidak pernah memicu transisi: skeletonnya akan melompat langsung ke
-   opacity:1 lalu memudar — persis kedipan yang mau dihindari. Blok ini
-   memberi keadaan awalnya, jadi jeda --jeda-muat tetap berlaku pada pembukaan
-   yang pertama sekalipun. Letaknya harus setelah aturan kilau di atas:
-   spesifisitasnya sama, jadi yang menang yang belakangan di sumber. Peramban
-   yang belum mengenal @starting-style mengabaikan blok ini, dan yang terjadi
-   cuma kembali ke kedipan itu. */
+
 @starting-style{
   .kartu__buka:has(img[data-muat="0"])::after,
   .pratinjau__gambar:has(img[data-muat="0"])::after{opacity:0}
@@ -462,9 +438,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .pratinjau__gambar:has(img[data-muat="0"])::after{transition:opacity 0s linear var(--jeda-muat)}
   .pratinjau__gambar:has(img[data-muat="0"])::after{animation:none}
 }
-/* Wadah yang bisa digeser ini diberi tabindex oleh setZoom() supaya bisa
-   dijangkau keyboard, dan :focus-visible global memakai offset positif yang
-   terpotong overflow dialog. Ditarik ke dalam. */
+
 .pratinjau__gambar:focus-visible{outline-offset:-3px; border-radius:0}
 .atas-gambar{
   position:absolute; top:10px; z-index:2;
@@ -489,18 +463,9 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   font-size:13px; line-height:1.4; color:var(--label-2);
 }
 .ingat svg{width:16px; height:16px; flex:0 0 auto; margin-top:1px; color:#B25E00}
-/* Keterangan desain dari AI. Dialognya jadi flex kolom supaya bagian ini yang
-   mengalah saat ruang sempit: ia menggulir sendiri, sedangkan gambar, strip
-   peringatan, dan kakinya tidak boleh menyusut. Tanpa itu, keterangan panjang
-   mendorong kaki dialog keluar dari area yang terlihat — dan .pratinjau
-   memakai overflow:hidden, jadi yang keluar memang tidak bisa dijangkau. */
+
 .pratinjau{display:flex; flex-direction:column}
-/* Satu baris ini wajib ada. Sebelum dialognya jadi flex, yang menyembunyikan
-   dialog saat tertutup adalah aturan bawaan peramban dialog:not([open]) — dan
-   aturan bawaan kalah dari aturan penulis, jadi begitu kita menyetel display
-   sendiri, dialog tertutup tetap tergambar (opacity:0) dan tetap menerima
-   klik. Akibatnya seluruh galeri tidak bisa diklik sama sekali setelah
-   pratinjau pernah dibuka. */
+
 .pratinjau:not([open]){display:none}
 .pratinjau__gambar,
 .ingat,
@@ -526,14 +491,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   font-size:14px; line-height:1.5; color:var(--label);
   white-space:pre-line;
 }
-/* Keterangan yang baru pertama kali dibuka terlihat sedang ditulis: kursor
-   berkedip dulu, lalu katanya menyusul naik satu per satu.
-   Seluruh paragraf sudah ada di DOM sejak awal dan yang belum giliran cuma
-   transparan. Dua keuntungan sekaligus: tingginya sudah final sebelum kata
-   pertama muncul (kaki dialog tidak pernah bergeser), dan yang dianimasikan
-   cuma opacity dan transform — dua sifat yang dikerjakan kompositor tanpa
-   menghitung ulang tata letak. Tidak ada teks yang ditulis ulang per frame
-   seperti versi sebelumnya, jadi tidak ada yang bisa bikin ngeframe. */
+
 .pratinjau__kata{display:inline-block}
 .pratinjau__teks[data-alir="menunggu"] .pratinjau__kata{opacity:0}
 .pratinjau__teks[data-alir="menulis"] .pratinjau__kata{
@@ -543,9 +501,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   from{opacity:0; transform:translateY(.42em)}
   to{opacity:1; transform:none}
 }
-/* Kursor tidak boleh menggeser teks sesudahnya, jadi jangkarnya selebar nol:
-   kotaknya nol dan patahan barisnya sama seperti tanpa kursor, tapi kursornya
-   tetap tergambar karena meluber keluar. */
+
 .pratinjau__jangkar{display:inline-block; width:0}
 .pratinjau__kursor{
   display:inline-block; width:2px; height:1.05em;
@@ -554,23 +510,11 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 .pratinjau__teks[data-alir="menunggu"] .pratinjau__kursor{
   opacity:1; animation:kedip 1.05s steps(1, end) infinite;
 }
-/* Begitu kata pertama naik, kursornya ikut pudar — bukan hilang mendadak. */
+
 .pratinjau__teks[data-alir="menulis"] .pratinjau__kursor{animation:pudar .3s ease-out both}
 @keyframes kedip{0%,45%{opacity:1}50%,100%{opacity:0}}
 @keyframes pudar{from{opacity:1}to{opacity:0}}
-/* Buka ulang tidak lagi memutar sandiwara menulisnya — itu cuma sekali per
-   orang per desain. Kali ini bloknya yang masuk sebentar: labelnya dulu,
-   teksnya menyusul, memakai gerakan yang sama dengan kartu galeri. Sengaja
-   bukan aliran kata lagi: aliran kata baru terbaca sebagai tulisan kalau
-   jalannya lambat, dan kalau dipercepat jadi sapuan pudar yang justru itulah
-   yang mau dihindari.
-   Hanya opacity dan transform, jadi tidak ada ongkos tata letak.
-   Dipisah dari `muncul` bukan cuma karena durasinya beda. `muncul` memakai
-   --kurva, yang menaruh dua pertiga gerakannya di 20% waktu pertama — pas
-   untuk kartu galeri yang datang beramai-ramai dan harus gesit, tapi terbaca
-   sebagai "nemplok" untuk satu blok yang memang mau dibaca. Di sini lengkungnya
-   dibuat lebih rata, dan jarak naiknya ditambah, supaya gerakannya sempat
-   terlihat alih-alih cuma terasa sebagai kedipan. */
+
 @keyframes masuk-keterangan{
   from{opacity:0; transform:translateY(14px)}
 }
@@ -580,8 +524,7 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
 .pratinjau__teks[data-alir="singkat"]{
   animation:masuk-keterangan .65s cubic-bezier(.4,0,.2,1) .14s both;
 }
-/* Ada keterangan berarti ada satu blok lagi yang harus muat. Gambarnya yang
-   dikorbankan, bukan keterangannya. */
+
 .pratinjau:has([data-pratinjau-deskripsi]:not([hidden])) .pratinjau__gambar img{
   max-height:calc(100dvh - 400px);
 }
@@ -750,4 +693,3 @@ button{font:inherit; color:inherit; background:none; border:0; padding:0}
   .petak{padding:12px}
   .petak__n{font-size:25px}
 }
-
